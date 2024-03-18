@@ -8,6 +8,7 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args)throws Exception {
+        /*
         Kademlia kad = new Kademlia();
 
         //BEP 5
@@ -29,8 +30,9 @@ public class Main {
         //BEP 51
         kad.registerMessage(SampleHashRequest.class);
         kad.registerMessage(SampleHashResponse.class);
+        */
 
-        Torrent torrent = new Torrent(new File(""));
+        Torrent torrent = new Torrent(new File("/home/brad/Downloads/torrent.torrent"));
         System.out.println(torrent.getAnnounce());
         System.out.println(torrent.getComment());
         System.out.println(torrent.getCreatedBy());
