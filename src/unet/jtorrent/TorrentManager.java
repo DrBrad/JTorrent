@@ -51,7 +51,7 @@ public class TorrentManager {
             try{
                 switch(TrackerTypes.getFromScheme(announce.getScheme())){
                     case UDP:
-                        trackerList.add(new UDPTracker(udp, torrent, announce));
+                        trackerList.add(new UDPTracker(this, torrent, announce));
                         break;
 
                     case HTTP:
@@ -66,6 +66,9 @@ public class TorrentManager {
         for(Tracker tracker : trackerList){
             tracker.announce();
         }
+
+        //ONCE WE GET PEERS START DOWNLOADING...
+
     }
 
     public void resumeTorrent(int i){

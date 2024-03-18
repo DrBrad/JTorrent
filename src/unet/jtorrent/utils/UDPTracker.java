@@ -1,5 +1,6 @@
 package unet.jtorrent.utils;
 
+import unet.jtorrent.TorrentManager;
 import unet.jtorrent.trackers.udp.ResponseCallback;
 import unet.jtorrent.trackers.udp.client.UDPClient;
 import unet.jtorrent.trackers.udp.messages.AnnounceRequest;
@@ -17,16 +18,16 @@ import java.security.SecureRandom;
 
 public class UDPTracker extends Tracker {
 
-    private UDPClient client;
+    private TorrentManager manager;
     private Torrent torrent;
     private InetAddress[] addresses;
     private int port = 6969;
     private long[] connectionIDs;
     private int key, numWant = -1;
 
-    public UDPTracker(UDPClient client, Torrent torrent, URI uri)throws UnknownHostException, NoSuchAlgorithmException {
+    public UDPTracker(TorrentManager manager, Torrent torrent, URI uri)throws UnknownHostException, NoSuchAlgorithmException {
         super();
-        this.client = client;
+        this.manager = manager;
         this.torrent = torrent;
 
         addresses = InetAddress.getAllByName(uri.getHost());
@@ -58,7 +59,7 @@ public class UDPTracker extends Tracker {
         request.setDestination(addresses[i], port);
 
         try{
-            client.send(request, new ResponseCallback(){
+            manager.getUDPClient().send(request, new ResponseCallback(){
                 @Override
                 public void onResponse(MessageBase message){
                     ConnectResponse response = (ConnectResponse) message;
@@ -92,16 +93,12 @@ public class UDPTracker extends Tracker {
         request.setPort(8080); //TCP PORT
 
         try{
-            client.send(request, new ResponseCallback(){
+            manager.getUDPClient().send(request, new ResponseCallback(){
                 @Override
                 public void onResponse(MessageBase message){
                     AnnounceResponse response = (AnnounceResponse) message;
+                    peers.addAll(response.getAllPeers());
 
-                    for(InetSocketAddress address : response.getAllPeers()){
-                        System.out.println(address.getAddress().getHostAddress()+" : "+address.getPort());
-                    }
-
-                    //response.getSeeders();
                     System.out.println("SEEDERS: "+response.getSeeders()+"  LEACHERS: "+response.getLeachers()+"  INTERVAL: "+response.getInterval());
                 }
             });

@@ -1,13 +1,12 @@
 package unet.jtorrent.utils.inter;
 
-import unet.jtorrent.utils.Peer;
-
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Tracker {
 
-    private List<Peer> peers;
+    protected List<InetSocketAddress> peers;
 
     public Tracker(){
         peers = new ArrayList<>();
@@ -16,4 +15,8 @@ public abstract class Tracker {
     public abstract void announce();
 
     public abstract void scrape();
+
+    public List<InetSocketAddress> getAllPeers(){
+        return peers;
+    }
 }

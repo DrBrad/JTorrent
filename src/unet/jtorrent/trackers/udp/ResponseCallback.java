@@ -1,8 +1,12 @@
 package unet.jtorrent.trackers.udp;
 
+import unet.jtorrent.trackers.udp.messages.ErrorResponse;
 import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
 
-public interface ResponseCallback {
+public abstract class ResponseCallback {
 
-    void onResponse(MessageBase message);
+    public abstract void onResponse(MessageBase message);
+
+    public void onErrorResponse(ErrorResponse message){
+    }
 }
