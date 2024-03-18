@@ -5,11 +5,13 @@ import unet.jtorrent.utils.UDPTracker;
 import unet.jtorrent.trackers.udp.client.UDPClient;
 import unet.jtorrent.utils.Torrent;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.URI;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -156,5 +158,57 @@ public class Main {
             ex.printStackTrace();
         }
         */
+    }
+
+    public static void test(){
+        // The announce URL of the tracker
+        String announceUrl = "http://tracker.example.com/announce";
+
+        // Construct the announce URL with required parameters
+        String infoHash = "your_info_hash";
+        String peerId = "your_peer_id";
+        long uploaded = 0;
+        long downloaded = 0;
+        long left = 100; // Example value, adjust as needed
+        String event = "started"; // Example value, adjust as needed
+        int port = 6881; // Example value, adjust as needed
+
+        String announceRequest = "?info_hash="+infoHash+
+                "&peer_id="+peerId+
+                "&downloaded="+downloaded+
+                "&left="+left+
+                "&uploaded="+uploaded+
+                "&event="+event+
+                "&port="+port;
+        //String announceRequest = String.format("%s?info_hash=%s&peer_id=%s&uploaded=%s&downloaded=%s&left=%s&event=%s&port=%s",
+        //        announceUrl, infoHash, peerId, uploaded, downloaded, left, event, port);
+
+        try {
+            // Create a URL object from the announce request string
+            URL url = new URL(announceRequest);
+
+            // Open a connection to the URL
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Set request method to GET
+            connection.setRequestMethod("GET");
+
+            // Read the response from the tracker
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+            String line;
+            StringBuilder response = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            // Print the response from the tracker
+            System.out.println("Tracker response: " + response.toString());
+
+            // Close the connection
+            connection.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
