@@ -43,6 +43,11 @@ public class Main {
             builder.append(String.format("%02x", b));
         }
 
+        //2 751 421 688 LEFT
+        //NUM_WANT 80...? WHY NOT -1
+
+        System.out.println(torrent.getInfo().getPieces().size()+"  "+torrent.getInfo().getTotalLength());
+
 
         /*
         for(byte[] piece : torrent.getInfo().getPieces()){

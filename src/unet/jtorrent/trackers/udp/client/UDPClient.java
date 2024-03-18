@@ -1,4 +1,4 @@
-package unet.jtorrent.trackers.clients;
+package unet.jtorrent.trackers.udp.client;
 
 import unet.kad4.utils.ByteWrapper;
 import unet.kad4.utils.net.AddressUtils;

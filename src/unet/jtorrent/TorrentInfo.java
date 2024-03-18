@@ -12,7 +12,7 @@ public class TorrentInfo {
     public static final int PIECE_LENGTH = 20;
 
     private String name;
-    private long pieceLength;
+    private long pieceLength, length;
     private byte[] infoHash;
     private List<byte[]> pieces;
     private List<TorrentFile> files;
@@ -40,7 +40,9 @@ public class TorrentInfo {
             files = new ArrayList<>();
 
             for(int i = 0; i < ben.getBencodeArray("files").size(); i++){
-                files.add(new TorrentFile(ben.getBencodeArray("files").getBencodeObject(i)));
+                TorrentFile file = new TorrentFile(ben.getBencodeArray("files").getBencodeObject(i));
+                files.add(file);
+                length += file.getLength();
             }
         }
 
@@ -68,31 +70,7 @@ public class TorrentInfo {
         return infoHash;
     }
 
-    public class TorrentFile {
-
-        private List<String> path;
-        private long length;
-
-        public TorrentFile(BencodeObject ben){
-            if(ben.containsKey("length")){
-                length = ben.getLong("length");
-            }
-
-            if(ben.containsKey("path")){
-                path = new ArrayList<>();
-
-                for(int i = 0; i < ben.getBencodeArray("path").size(); i++){
-                    path.add(ben.getBencodeArray("path").getString(i));
-                }
-            }
-        }
-
-        public long getLength(){
-            return length;
-        }
-
-        public List<String> getPath(){
-            return path;
-        }
+    public long getTotalLength(){
+        return length;
     }
 }
