@@ -1,5 +1,6 @@
 package unet.jtorrent.trackers.udp.client;
 
+import unet.jtorrent.trackers.udp.messages.ScrapeResponse;
 import unet.kad4.utils.ByteWrapper;
 import unet.kad4.utils.net.AddressUtils;
 import unet.jtorrent.trackers.udp.*;
@@ -121,8 +122,6 @@ public class UDPClient {
                 ((buf[2] & 0xff) << 8) |
                 (buf[3] & 0xff));
 
-        System.out.println(action);
-
         byte[] tid = new byte[4];
         System.arraycopy(buf, 4, tid, 0, tid.length);
 
@@ -140,22 +139,21 @@ public class UDPClient {
                 break;
 
             case ANNOUNCE:
-                System.out.println("ANNOUNCE");
                 response = new AnnounceResponse(tid);
                 break;
 
             case SCRAPE:
-                System.out.println("SCRAPE");
-                response = null;
+                response = new ScrapeResponse(tid);
                 return;
 
             case ERROR:
-                System.out.println("ERROR");
                 response = new ErrorResponse(tid);
+                response.setOrigin(packet.getAddress(), packet.getPort());
+                response.decode(buf, packet.getOffset()+8, packet.getLength()-9);
+                call.getCallback().onErrorResponse((ErrorResponse) response);
                 return;
 
             default:
-                System.out.println("UNKNOWN");
                 return;
         }
 
