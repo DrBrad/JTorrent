@@ -34,7 +34,15 @@ public class Main {
         kad.registerMessage(SampleHashResponse.class);
         */
 
+        TorrentManager manager = new TorrentManager();
+        manager.start();
+
+        manager.startTorrent(new File("/home/brad/Downloads/torrent.torrent"));
+
+
+        /*
         Torrent torrent = new Torrent(new File("/home/brad/Downloads/torrent.torrent"));
+
         System.out.println(torrent.getComment());
         System.out.println(torrent.getCreatedBy());
         System.out.println(torrent.getInfo().getFiles().get(0).getPath().get(0));
