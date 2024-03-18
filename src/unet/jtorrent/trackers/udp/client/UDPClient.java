@@ -159,8 +159,8 @@ public class UDPClient {
                 return;
         }
 
-        response.decode(buf, packet.getOffset()+8, packet.getLength()-9);
         response.setOrigin(packet.getAddress(), packet.getPort());
+        response.decode(buf, packet.getOffset()+8, packet.getLength()-9);
         call.getCallback().onResponse(response);
     }
 

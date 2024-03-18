@@ -11,9 +11,7 @@ import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
 import unet.jtorrent.utils.inter.Tracker;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -98,6 +96,11 @@ public class UDPTracker extends Tracker {
                 @Override
                 public void onResponse(MessageBase message){
                     AnnounceResponse response = (AnnounceResponse) message;
+
+                    for(InetSocketAddress address : response.getAllPeers()){
+                        System.out.println(address.getAddress().getHostAddress()+" : "+address.getPort());
+                    }
+
                     //response.getSeeders();
                     System.out.println("SEEDERS: "+response.getSeeders()+"  LEACHERS: "+response.getLeachers()+"  INTERVAL: "+response.getInterval());
                 }
