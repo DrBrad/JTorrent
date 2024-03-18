@@ -1,9 +1,11 @@
 package unet.jtorrent;
 
-import unet.jtorrent.kad.messages.*;
-import unet.kad4.Kademlia;
+import unet.jtorrent.utils.UDPTracker;
+import unet.jtorrent.trackers.udp.client.UDPClient;
+import unet.jtorrent.utils.Torrent;
 
 import java.io.File;
+import java.net.URI;
 
 public class Main {
 
@@ -33,7 +35,6 @@ public class Main {
         */
 
         Torrent torrent = new Torrent(new File("/home/brad/Downloads/torrent.torrent"));
-        System.out.println(torrent.getAnnounce());
         System.out.println(torrent.getComment());
         System.out.println(torrent.getCreatedBy());
         System.out.println(torrent.getInfo().getFiles().get(0).getPath().get(0));
@@ -45,8 +46,30 @@ public class Main {
 
         //2 751 421 688 LEFT
         //NUM_WANT 80...? WHY NOT -1
+        //KEY SHOULD BE STORED BY TRACKER... - AS IPv4 & IPv6 SHOULD USE SAME KEY IF ANNOUNCING TO BOTH...
 
         System.out.println(torrent.getInfo().getPieces().size()+"  "+torrent.getInfo().getTotalLength());
+
+        UDPClient client = new UDPClient();
+        client.start();
+
+        for(URI uri : torrent.getAnnounceList()){
+            switch(uri.getScheme()){
+                case "udp":
+
+                    break;
+
+                case "http":
+
+                    break;
+            }
+        }
+
+
+
+
+        //MAKE TRACKER SERVER OPTION...
+
 
 
         /*

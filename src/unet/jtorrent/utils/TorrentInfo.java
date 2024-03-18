@@ -1,4 +1,4 @@
-package unet.jtorrent;
+package unet.jtorrent.utils;
 
 import unet.bencode.variables.BencodeObject;
 

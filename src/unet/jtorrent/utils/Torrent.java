@@ -1,4 +1,4 @@
-package unet.jtorrent;
+package unet.jtorrent.utils;
 
 import unet.bencode.io.BencodeReader;
 import unet.bencode.variables.BencodeObject;
@@ -6,14 +6,17 @@ import unet.bencode.variables.BencodeObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Torrent {
 
-    private String announce, comment, createdBy;
-    private List<String> announceList;
+    private String comment, createdBy;
+    private List<URI> announceList;
     private long creationDate;
     private TorrentInfo info;
 
@@ -23,14 +26,28 @@ public class Torrent {
             BencodeObject ben = (BencodeObject) reader.read();
             reader.close();
 
-            if(ben.containsKey("announce")){
-                announce = ben.getString("announce");
-            }
+            //SHOULD WE JUST IGNORE THIS OR ADD IT TO THE ANNOUNCE LIST...?
 
             if(ben.containsKey("announce-list")){
                 announceList = new ArrayList<>();
                 for(int i = 0; i < ben.getBencodeArray("announce-list").size(); i++){
-                    announceList.add(ben.getBencodeArray("announce-list").getBencodeArray(i).getString(0));
+                    try{
+                        announceList.add(new URI(ben.getBencodeArray("announce-list").getBencodeArray(i).getString(0)));
+                    }catch(URISyntaxException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if(ben.containsKey("announce")){
+                if(announceList == null){
+                    announceList = new ArrayList<>();
+                }
+
+                try{
+                    announceList.add(new URI(ben.getString("announce")));
+                }catch(URISyntaxException e){
+                    e.printStackTrace();
                 }
             }
 
@@ -57,11 +74,7 @@ public class Torrent {
         }
     }
 
-    public String getAnnounce(){
-        return announce;
-    }
-
-    public List<String> getAnnounceList(){
+    public List<URI> getAnnounceList(){
         return announceList;
     }
 
