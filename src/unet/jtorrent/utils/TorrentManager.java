@@ -80,10 +80,8 @@ public class TorrentManager {
 
     private void openConnection(InetSocketAddress address)throws IOException {
         connections.add(address);
-        TCPSocket socket = new TCPSocket(this);
-        socket.connect(address);
 
-        client.getExecutor().submit(socket);
+        client.getExecutor().submit(new TCPSocket(this, address));
     }
 
     public TorrentClient getClient(){

@@ -26,63 +26,68 @@ public class HTTPTracker extends Tracker {
 
     @Override
     public void announce(AnnounceEvent event){
-        try{
-            String url = String.format("%s?info_hash=%s&peer_id=%s&downloaded=%s&left=%s&uploaded=%s&event=%s&num_want=%s&port=%s",
-                    uri.getScheme()+"://"+uri.getHost()+":"+uri.getPort()+"/announce",
-                    encodeHexString(manager.getTorrent().getInfo().getHash()),
-                    encodeHexString(manager.getClient().getPeerID()), //GRAB FROM CLIENT...
-                    manager.getDownloaded(),
-                    manager.getLeft(),
-                    manager.getUploaded(),
-                    event.getName(),
-                    manager.getClient().getMaxPeersPerRequest(),
-                    manager.getClient().getTCPPort());
+        manager.getClient().getExecutor().submit(new Runnable(){
+            @Override
+            public void run(){
+                try{
+                    String url = String.format("%s?info_hash=%s&peer_id=%s&downloaded=%s&left=%s&uploaded=%s&event=%s&num_want=%s&port=%s",
+                            uri.getScheme()+"://"+uri.getHost()+":"+uri.getPort()+"/announce",
+                            encodeHexString(manager.getTorrent().getInfo().getHash()),
+                            encodeHexString(manager.getClient().getPeerID()), //GRAB FROM CLIENT...
+                            manager.getDownloaded(),
+                            manager.getLeft(),
+                            manager.getUploaded(),
+                            event.getName(),
+                            manager.getClient().getMaxPeersPerRequest(),
+                            manager.getClient().getTCPPort());
 
-            System.out.println(url);
+                    System.out.println(url);
 
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setRequestMethod("GET");
+                    HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+                    connection.setRequestMethod("GET");
 
-            BencodeReader reader = new BencodeReader(connection.getInputStream());
-            BencodeObject ben = (BencodeObject) reader.read();
-            reader.close();
+                    BencodeReader reader = new BencodeReader(connection.getInputStream());
+                    BencodeObject ben = (BencodeObject) reader.read();
+                    reader.close();
 
-            connection.disconnect();
+                    connection.disconnect();
 
 
-            byte[] addr;
-            /*
-            if(origin.getAddress() instanceof Inet4Address){
-                addr = new byte[6];
+                    byte[] addr;
+                    /*
+                    if(origin.getAddress() instanceof Inet4Address){
+                        addr = new byte[6];
 
-            }else{
-                addr = new byte[18];
-            }
-            */
+                    }else{
+                        addr = new byte[18];
+                    }
+                    */
 
-            List<InetSocketAddress> peers = new ArrayList<>();
-            addr = new byte[6];
+                    List<InetSocketAddress> peersList = new ArrayList<>();
+                    addr = new byte[6];
 
-            int position = 0;
-            while(position < ben.getBytes("peers").length){
-                System.arraycopy(ben.getBytes("peers"), position, addr, 0, addr.length);
-                peers.add(PeerUtils.unpackAddress(addr));
-                position += addr.length;
-            }
+                    int position = 0;
+                    while(position < ben.getBytes("peers").length){
+                        System.arraycopy(ben.getBytes("peers"), position, addr, 0, addr.length);
+                        peersList.add(PeerUtils.unpackAddress(addr));
+                        position += addr.length;
+                    }
 
-            this.peers = peers.size();
+                    peers = peersList.size();
 
-            if(!listeners.isEmpty()){
-                for(PeerListener listener : listeners){
-                    listener.onPeersReceived(peers);
+                    if(!listeners.isEmpty()){
+                        for(PeerListener listener : listeners){
+                            listener.onPeersReceived(peersList);
+                        }
+                    }
+
+                    System.out.println("HTTP: "+uri.toString()+" GOT PEERS: "+peers);
+
+                }catch(IOException e){
+                    e.printStackTrace();
                 }
             }
-
-            System.out.println("HTTP: "+uri.toString()+" GOT PEERS: "+peers.size());
-
-        }catch(IOException e){
-            e.printStackTrace();
-        }
+        }, 9);
     }
 
     @Override

@@ -6,6 +6,7 @@ import unet.jtorrent.net.trackers.udp.ResponseCallback;
 import unet.jtorrent.net.trackers.udp.messages.*;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageAction;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
+import unet.jtorrent.utils.threads.PBQThreadPoolExecutor;
 import unet.kad4.utils.ByteWrapper;
 import unet.kad4.utils.net.AddressUtils;
 
@@ -27,13 +28,13 @@ public class UDPTrackerSocket {
     //TRANSACTION_ID
 
     //private InetSocketAddress address;
-    private ExecutorService executor;
+    private PBQThreadPoolExecutor executor;
     private final ConcurrentLinkedQueue<DatagramPacket> receivePool;
     private SecureRandom random;
     private ResponseTracker tracker;
     private DatagramSocket socket;
 
-    public UDPTrackerSocket(ExecutorService executor){
+    public UDPTrackerSocket(PBQThreadPoolExecutor executor){
         this.executor = executor;
         //URI uri = new URI(link);
         //address = new InetSocketAddress(InetAddress.getByName(uri.getHost()), uri.getPort());
@@ -76,7 +77,7 @@ public class UDPTrackerSocket {
                     }
                 }
             }
-        });
+        }, 10);
 
         executor.submit(new Runnable(){
             @Override
@@ -89,7 +90,7 @@ public class UDPTrackerSocket {
                     tracker.removeStalled();
                 }
             }
-        });
+        }, 10);
     }
 
     public void stop(){
