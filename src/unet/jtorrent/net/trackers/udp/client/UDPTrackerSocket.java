@@ -1,12 +1,11 @@
 package unet.jtorrent.net.trackers.udp.client;
 
-import unet.jtorrent.TorrentClient;
 import unet.jtorrent.net.trackers.udp.Call;
 import unet.jtorrent.net.trackers.udp.ResponseCallback;
 import unet.jtorrent.net.trackers.udp.messages.*;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageAction;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
-import unet.jtorrent.utils.threads.PBQThreadPoolExecutor;
+import unet.jtorrent.utils.pool.PBQThreadPoolExecutor;
 import unet.kad4.utils.ByteWrapper;
 import unet.kad4.utils.net.AddressUtils;
 
@@ -17,7 +16,6 @@ import java.net.SocketException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
 
 public class UDPTrackerSocket {
 

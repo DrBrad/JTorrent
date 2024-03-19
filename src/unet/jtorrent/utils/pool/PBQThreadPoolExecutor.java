@@ -1,4 +1,4 @@
-package unet.jtorrent.utils.threads;
+package unet.jtorrent.utils.pool;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;

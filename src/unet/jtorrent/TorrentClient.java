@@ -3,7 +3,7 @@ package unet.jtorrent;
 import unet.jtorrent.net.trackers.udp.client.UDPTrackerSocket;
 import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.TorrentManager;
-import unet.jtorrent.utils.threads.PBQThreadPoolExecutor;
+import unet.jtorrent.utils.pool.PBQThreadPoolExecutor;
 
 import java.io.File;
 import java.net.SocketException;
