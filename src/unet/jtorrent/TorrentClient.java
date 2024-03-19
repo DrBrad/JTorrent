@@ -37,6 +37,10 @@ public class TorrentClient {
         if(udpAnnounce.isRunning()){
             udpAnnounce.stop();
         }
+
+        if(!executor.isShutdown()){
+            executor.shutdown();
+        }
     }
 
     public synchronized void startTorrent(File source/*, File dest*/){
