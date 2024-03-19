@@ -18,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class UDPClient {
+public class UDPAnnounceClient {
 
     //BEP 15
     public static final int TID_LENGTH = 4;
@@ -32,7 +32,7 @@ public class UDPClient {
     private ResponseTracker tracker;
     private DatagramSocket socket;
 
-    public UDPClient(){
+    public UDPAnnounceClient(){
         //URI uri = new URI(link);
         //address = new InetSocketAddress(InetAddress.getByName(uri.getHost()), uri.getPort());
         receivePool = new ConcurrentLinkedQueue<>();

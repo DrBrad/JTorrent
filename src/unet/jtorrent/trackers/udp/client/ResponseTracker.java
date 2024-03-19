@@ -13,12 +13,12 @@ public class ResponseTracker {
     public static final int MAX_ACTIVE_CALLS = 512;
 
     //public static final long STALLED_TIME = 60000;
-    private final UDPClient client;
+    private final UDPAnnounceClient client;
     private final LinkedHashMap<ByteWrapper, Call> calls;
     //private final ConcurrentHashMap<ByteWrapper, RequestEvent> calls;
     //private final ConcurrentLinkedQueue<ByteWrapper> callsOrder;
 
-    public ResponseTracker(UDPClient client){
+    public ResponseTracker(UDPAnnounceClient client){
         this.client = client;
         calls = new LinkedHashMap<>(MAX_ACTIVE_CALLS);
         //calls = new ConcurrentHashMap<>(MAX_ACTIVE_CALLS);

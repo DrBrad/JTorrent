@@ -7,6 +7,11 @@ public enum TrackerTypes {
             return "udp";
         }
     },
+    HTTPS {
+        public String getScheme(){
+            return "https";
+        }
+    },
     HTTP {
         public String getScheme(){
             return "http";

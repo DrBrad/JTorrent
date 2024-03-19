@@ -1,6 +1,6 @@
 package unet.jtorrent.trackers.udp.messages;
 
-import unet.jtorrent.trackers.udp.messages.inter.AnnounceEvent;
+import unet.jtorrent.trackers.inter.AnnounceEvent;
 import unet.jtorrent.trackers.udp.messages.inter.MessageAction;
 import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
 
