@@ -1,10 +1,8 @@
-package unet.jtorrent.net.tunnel.tcp;
+package unet.jtorrent.net.tunnel.messages.inter;
 
-public enum PeerMessage {
+public enum MessageType {
     /*
     https://wiki.theory.org/BitTorrentSpecification#Messages
-
-    - WHAT ABOUT KEEP_ALIVE...?
 
     0 - choke
     1 - unchoke
@@ -16,6 +14,7 @@ public enum PeerMessage {
     7 - piece
     8 - cancel
     */
+
     KEEP_ALIVE {
         public int getLength(){
             return 0;
@@ -112,8 +111,8 @@ public enum PeerMessage {
         }
     }, INVALID;
 
-    public PeerMessage getFromID(byte code){
-        for(PeerMessage message : values()){
+    public MessageType getFromID(byte code){
+        for(MessageType message : values()){
             if(code == message.getID()){
                 return message;
             }

@@ -12,7 +12,8 @@ public class TorrentInfo {
     public static final int PIECE_LENGTH = 20;
 
     private String name;
-    private long pieceLength, length;
+    private int pieceLength;
+    private long length;
     private byte[] infoHash;
     private List<byte[]> pieces;
     private List<TorrentFile> files;
@@ -23,7 +24,7 @@ public class TorrentInfo {
         }
 
         if(ben.containsKey("piece length")){
-            pieceLength = ben.getLong("piece length");
+            pieceLength = ben.getInteger("piece length");
         }
 
         if(ben.containsKey("pieces")){
@@ -54,7 +55,7 @@ public class TorrentInfo {
         return name;
     }
 
-    public long getPieceLength(){
+    public int getPieceLength(){
         return pieceLength;
     }
 

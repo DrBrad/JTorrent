@@ -1,7 +1,8 @@
 package unet.jtorrent.net.tunnel.tcp;
 
-import unet.jtorrent.TorrentClient;
-import unet.jtorrent.utils.Torrent;
+import unet.jtorrent.net.tunnel.messages.KeepAliveMessage;
+import unet.jtorrent.net.tunnel.messages.RequestMessage;
+import unet.jtorrent.net.tunnel.messages.inter.MessageType;
 import unet.jtorrent.utils.TorrentManager;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ public class TCPSocket implements Runnable {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
+    private byte[] peerID;
 
     public TCPSocket(TorrentManager manager, InetSocketAddress address){
         this.manager = manager;
@@ -50,9 +52,15 @@ public class TCPSocket implements Runnable {
         handshake();
 
         socket.setKeepAlive(true);
-        sendMessage(PeerMessage.KEEP_ALIVE);
+        out.write(new KeepAliveMessage().encode());
 
         //INTERESTED, REQUEST, OR PIECE
+        RequestMessage message = new RequestMessage();
+        message.setIndex(0);
+        message.setBegin(0);
+        message.setLength(manager.getTorrent().getInfo().getPieceLength());
+        out.write(message.encode());
+
     }
 
     public void handshake()throws IOException {
@@ -84,15 +92,13 @@ public class TCPSocket implements Runnable {
         */
 
         if(in.read() != PROTOCOL_HEADER.length){
-            System.err.println("PROTOCOL HEADER LENGTH ISNT CORRECT");
-            return; //CLOSE
+            throw new IOException("Protocol header is incorrect.");
         }
 
         byte[] protocolHeader = new byte[PROTOCOL_HEADER.length];
         in.read(protocolHeader);
         if(!Arrays.equals(protocolHeader, PROTOCOL_HEADER)){
-            System.err.println("PROTOCOL HEADER ISNT CORRECT");
-            return; //CLOSE
+            throw new IOException("Protocol header is incorrect.");
         }
 
         in.skip(8); //RESERVED SKIP
@@ -101,43 +107,13 @@ public class TCPSocket implements Runnable {
         in.read(infoHash);
 
         if(!Arrays.equals(infoHash, manager.getTorrent().getInfo().getHash())){
-            System.err.println("INFO_HASH ISNT CORRECT");
-            return; //CLOSE
+            throw new IOException("Info Hash is incorrect.");
         }
 
-
-
-        byte[] peerID = new byte[20];
+        peerID = new byte[20];
         in.read(peerID);
 
-        //SENDERS PEER_ID
-
-
-
-
         System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID));
-
-
-        //sendMessage(PeerMessage.KEEP_ALIVE);
-
-
-
-        //out.flush();
-    }
-
-    public void sendMessage(PeerMessage message)throws IOException {
-        out.write(new byte[]{
-                (byte) (message.getLength() >> 24),
-                (byte) (message.getLength() >> 16),
-                (byte) (message.getLength() >> 8),
-                (byte) message.getLength()
-        });
-
-        if(message.getLength() > 0){
-            out.write(message.getID());
-        }
-
-        //out.flush();
     }
 
     public void close()throws IOException {
