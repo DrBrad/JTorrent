@@ -5,7 +5,7 @@ import unet.jtorrent.net.tunnel.messages.inter.MessageType;
 
 public class RequestMessage extends MessageBase {
 
-    private int index, begin, length;
+    private int index, begin = 0, length;
 
     public RequestMessage(){
         type = MessageType.REQUEST;

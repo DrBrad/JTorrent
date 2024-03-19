@@ -56,8 +56,8 @@ public class TCPSocket implements Runnable {
 
         //INTERESTED, REQUEST, OR PIECE
         RequestMessage message = new RequestMessage();
-        message.setIndex(0);
-        message.setBegin(0);
+        message.setIndex(manager.pollPiece());
+        message.setBegin(0); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
         message.setLength(manager.getTorrent().getInfo().getPieceLength());
         out.write(message.encode());
 

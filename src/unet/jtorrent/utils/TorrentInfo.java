@@ -63,6 +63,10 @@ public class TorrentInfo {
         return pieces;
     }
 
+    public int getTotalPieces(){
+        return pieces.size();
+    }
+
     public List<TorrentFile> getFiles(){
         return files;
     }

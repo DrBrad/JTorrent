@@ -6,7 +6,6 @@ import unet.jtorrent.announce.UDPTracker;
 import unet.jtorrent.announce.inter.PeerListener;
 import unet.jtorrent.announce.inter.Tracker;
 import unet.jtorrent.net.tunnel.tcp.TCPSocket;
-import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.inter.TrackerTypes;
 
 import java.io.IOException;
@@ -102,6 +101,23 @@ public class TorrentManager {
 
     public Torrent getTorrent(){
         return torrent;
+    }
+
+    public synchronized int pollPiece(){
+        //POLL WILL TAKE INCOMPLETE LIST HASH AND MOVE IT TO WORKING ON
+        //
+
+        //piecesCompleted[i] = true;
+
+        return 0; //RETURN INDEX
+    }
+
+    public synchronized void completedPiece(int i){
+        //REMOVE PIECE FROM INCOMPLETE
+    }
+
+    public synchronized void verify(){
+        //VERIFY ALL OF THE PIECES...
     }
 
     public synchronized int getTotalPotentialPeers(){
