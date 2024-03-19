@@ -12,7 +12,7 @@ import java.net.Socket;
 
 public class TCPSocket implements Runnable {
 
-    public static final String BITTORRENT_PROTOCOL_IDENTIFIER = "BitTorrent protocol";
+    //public static final String BITTORRENT_PROTOCOL_IDENTIFIER = "BitTorrent protocol";
     public static final byte[] PROTOCOL_HEADER = new byte[]{ 'B', 'i', 't', 'T', 'o', 'r', 'r', 'e', 'n', 't', ' ', 'p', 'r', 'o', 't', 'o', 'c', 'o', 'l' };
     private TorrentManager manager;
     private InetSocketAddress address;
@@ -54,8 +54,8 @@ public class TCPSocket implements Runnable {
         //byte[] reservedBytes = new byte[8]; // Reserved bytes are typically all zeros
         //byte[] message = new byte[68]; // Handshake message is 68 bytes in length
 
-        out.write((byte) BITTORRENT_PROTOCOL_IDENTIFIER.length());
-        out.write(BITTORRENT_PROTOCOL_IDENTIFIER.getBytes("ISO-8859-1"));//PROTOCOL_HEADER);
+        out.write((byte) PROTOCOL_HEADER.length);
+        out.write(PROTOCOL_HEADER);//PROTOCOL_HEADER);
         out.write(new byte[8]);
         out.write(manager.getTorrent().getInfo().getHash());
         out.write(manager.getClient().getPeerID());
