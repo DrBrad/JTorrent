@@ -2,14 +2,11 @@ package unet.jtorrent.net.trackers.udp.client;
 
 import unet.jtorrent.net.trackers.udp.Call;
 import unet.jtorrent.net.trackers.udp.ResponseCallback;
-import unet.jtorrent.net.trackers.udp.messages.ConnectResponse;
-import unet.jtorrent.net.trackers.udp.messages.ErrorResponse;
-import unet.jtorrent.net.trackers.udp.messages.ScrapeResponse;
+import unet.jtorrent.net.trackers.udp.messages.*;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageAction;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
 import unet.kad4.utils.ByteWrapper;
 import unet.kad4.utils.net.AddressUtils;
-import unet.jtorrent.net.trackers.udp.messages.AnnounceResponse;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -144,8 +141,8 @@ public class UDPTrackerSocket {
                 break;
 
             case SCRAPE:
-                response = new ScrapeResponse(tid);
-                return;
+                response = new ScrapeResponse(tid, ((ScrapeRequest) call.getMessage()).getInfoHashesSize());
+                break;
 
             case ERROR:
                 response = new ErrorResponse(tid);

@@ -10,7 +10,19 @@ import java.util.List;
 
 public class AnnounceResponse extends MessageBase {
 
-    private int interval, leachers, seeders;
+    /*
+    Offset      Size            Name            Value
+    0           32-bit integer  action          1 // announce
+    4           32-bit integer  transaction_id
+    8           32-bit integer  interval
+    12          32-bit integer  leechers
+    16          32-bit integer  seeders
+    20 + 6 * n  32-bit integer  IP address
+    24 + 6 * n  16-bit integer  TCP port
+    20 + 6 * N
+    * */
+
+    private int interval, leechers, seeders;
     private List<InetSocketAddress> peers;
 
     public AnnounceResponse(byte[] tid){
@@ -31,7 +43,7 @@ public class AnnounceResponse extends MessageBase {
                 ((buf[off+2] & 0xff) << 8) |
                 (buf[off+3] & 0xff));
 
-        leachers = (((buf[off+4] & 0xff) << 24) |
+        leechers = (((buf[off+4] & 0xff) << 24) |
                 ((buf[off+5] & 0xff) << 16) |
                 ((buf[off+6] & 0xff) << 8) |
                 (buf[off+7] & 0xff));
@@ -65,12 +77,12 @@ public class AnnounceResponse extends MessageBase {
         return interval;
     }
 
-    public void setLeachers(int leachers){
-        this.leachers = leachers;
+    public void setLeechers(int leechers){
+        this.leechers = leechers;
     }
 
-    public int getLeachers(){
-        return leachers;
+    public int getLeechers(){
+        return leechers;
     }
 
     public void setSeeders(int seeders){

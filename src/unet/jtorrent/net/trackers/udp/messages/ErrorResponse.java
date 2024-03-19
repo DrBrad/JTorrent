@@ -5,6 +5,13 @@ import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
 
 public class ErrorResponse extends MessageBase {
 
+    /*
+    Offset  Size            Name            Value
+    0       32-bit integer  action          3 // error
+    4       32-bit integer  transaction_id
+    8       string  message
+    * */
+
     private String message;
 
     public ErrorResponse(byte[] tid){
