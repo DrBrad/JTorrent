@@ -1,4 +1,4 @@
-package unet.jtorrent.utils.inter;
+package unet.jtorrent.utils;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

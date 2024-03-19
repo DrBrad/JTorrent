@@ -6,8 +6,7 @@ import unet.jtorrent.TorrentClient;
 import unet.jtorrent.trackers.inter.TrackerClient;
 import unet.jtorrent.trackers.inter.AnnounceEvent;
 import unet.jtorrent.utils.Torrent;
-import unet.jtorrent.utils.inter.PeerUtils;
-import unet.kad4.utils.net.AddressUtils;
+import unet.jtorrent.utils.PeerUtils;
 
 import java.io.IOException;
 import java.net.*;
@@ -22,18 +21,18 @@ public class HTTPTrackerClient extends TrackerClient {
     }
 
     @Override
-    public void announce(){
+    public void announce(AnnounceEvent event){
         try{
             String url = String.format("%s?info_hash=%s&peer_id=%s&downloaded=%s&left=%s&uploaded=%s&event=%s&num_want=%s&port=%s",
                     uri.getScheme()+"://"+uri.getHost()+":"+uri.getPort()+"/announce",
                     encodeHexString(torrent.getInfo().getHash()),
-                    encodeHexString(stringToHex("2d5452333030302d326f71727270786231303232")),//encodeHexString(), //GRAB FROM CLIENT...
+                    encodeHexString(client.getPeerID()), //GRAB FROM CLIENT...
                     torrent.getDownloaded(),
                     torrent.getLeft(),
                     torrent.getUploaded(),
-                    AnnounceEvent.STARTED.getName(),
+                    event.getName(),
                     numWant,
-                    port);
+                    client.getTCPPort());
 
             System.out.println(url);
 
@@ -65,7 +64,11 @@ public class HTTPTrackerClient extends TrackerClient {
                 position += addr.length;
             }
 
-            System.out.println(ben);
+            for(InetSocketAddress address : peers){
+                //System.out.println("HTTP: "+address.getAddress().getHostAddress()+" : "+address.getPort());
+            }
+
+            System.out.println("HTTP: "+uri.toString()+" GOT PEERS: "+peers.size());
 
         }catch(IOException e){
             e.printStackTrace();

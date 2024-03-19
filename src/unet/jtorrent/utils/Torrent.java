@@ -29,6 +29,8 @@ public class Torrent {
             BencodeObject ben = (BencodeObject) reader.read();
             reader.close();
 
+            System.out.println(ben);
+
             //SHOULD WE JUST IGNORE THIS OR ADD IT TO THE ANNOUNCE LIST...?
 
             if(ben.containsKey("announce-list")){

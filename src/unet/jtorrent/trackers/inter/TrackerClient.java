@@ -12,7 +12,7 @@ public abstract class TrackerClient {
     protected TorrentClient client;
     protected Torrent torrent;
     protected List<InetSocketAddress> peers;
-    protected int port = 6969, numWant = -1;
+    protected int numWant = -1;
 
     public TrackerClient(TorrentClient client, Torrent torrent){
         this.client = client;
@@ -20,7 +20,11 @@ public abstract class TrackerClient {
         peers = new ArrayList<>();
     }
 
-    public abstract void announce();
+    public void announce(){
+        announce(AnnounceEvent.STARTED);
+    }
+
+    public abstract void announce(AnnounceEvent event);
 
     public abstract void scrape();
 

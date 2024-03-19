@@ -73,7 +73,7 @@ public class ResponseTracker {
                 client.retry(call);
                 System.out.println("RETRYING "+call.getAttempts());
             }catch(IOException e){
-                e.printStackTrace();
+                calls.remove(tid);
             }
 
 

@@ -19,13 +19,13 @@ import java.security.SecureRandom;
 public class UDPTrackerClient extends TrackerClient {
     private InetAddress[] addresses;
     private long[] connectionIDs;
-    private int key, numWant = -1;
+    private int port, key, numWant = -1;
 
     public UDPTrackerClient(TorrentClient client, Torrent torrent, URI uri)throws UnknownHostException, NoSuchAlgorithmException {
         super(client, torrent);
 
         addresses = InetAddress.getAllByName(uri.getHost());
-        if(uri.getPort() == 0){
+        if(uri.getPort() != 0){
             port = uri.getPort();
         }
         connectionIDs = new long[addresses.length];
@@ -35,9 +35,9 @@ public class UDPTrackerClient extends TrackerClient {
     }
 
     @Override
-    public void announce(){
+    public void announce(AnnounceEvent event){
         for(int i = 0; i < addresses.length; i++){
-            announce(i);
+            announce(i, event);
         }
     }
 
@@ -48,7 +48,7 @@ public class UDPTrackerClient extends TrackerClient {
         }
     }
 
-    private void connect(int i){
+    private void connect(int i, AnnounceEvent event){
         ConnectRequest request = new ConnectRequest();
         request.setDestination(addresses[i], port);
 
@@ -58,7 +58,7 @@ public class UDPTrackerClient extends TrackerClient {
                 public void onResponse(MessageBase message){
                     ConnectResponse response = (ConnectResponse) message;
                     connectionIDs[i] = response.getConnectionID();
-                    announce(i);
+                    announce(i, event);
                 }
             });
 
@@ -68,24 +68,24 @@ public class UDPTrackerClient extends TrackerClient {
         }
     }
 
-    private void announce(int i){
+    private void announce(int i, AnnounceEvent event){
         if(connectionIDs[i] == 0){
-            connect(i);
+            connect(i, event);
             return;
         }
 
         AnnounceRequest request = new AnnounceRequest();
         request.setDestination(addresses[i], port);
         request.setConnectionID(connectionIDs[i]);
-        request.setEvent(AnnounceEvent.STARTED);
-        request.setInfoHash(torrent.getInfo().getHash()); //9e8cb640823822be312c1278089c96cafacc8627
-        request.setPeerID(stringToHex("2d5452333030302d326f71727270786231303232")); //GRAB FROM CLIENT...
+        request.setEvent(event);
+        request.setInfoHash(torrent.getInfo().getHash());
+        request.setPeerID(client.getPeerID()); //GRAB FROM CLIENT...
         request.setDownloaded(torrent.getDownloaded());
         request.setLeft(torrent.getLeft()); //MUST CALC THE AMMOUNT WE NEED...
         request.setUploaded(torrent.getUploaded());
         request.setNumWant(numWant);
         request.setKey(key);
-        request.setPort(8080); //TCP PORT
+        request.setPort(client.getTCPPort());
 
         try{
             client.getUDPClient().send(request, new ResponseCallback(){
@@ -95,10 +95,11 @@ public class UDPTrackerClient extends TrackerClient {
                     peers.addAll(response.getAllPeers());
 
                     for(InetSocketAddress address : response.getAllPeers()){
-                        System.out.println(address.getAddress().getHostAddress()+" : "+address.getPort());
+                        //System.out.println("UDP: "+address.getAddress().getHostAddress()+" : "+address.getPort());
                     }
 
-                    System.out.println("SEEDERS: "+response.getSeeders()+"  LEACHERS: "+response.getLeachers()+"  INTERVAL: "+response.getInterval());
+                    //System.out.println("SEEDERS: "+response.getSeeders()+"  LEACHERS: "+response.getLeachers()+"  INTERVAL: "+response.getInterval());
+                    System.out.println("UDP: "+response.getOrigin().getAddress().getHostAddress()+":"+response.getOrigin().getPort()+" GOT PEERS: "+peers.size());
                 }
             });
 

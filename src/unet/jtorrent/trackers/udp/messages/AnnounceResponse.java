@@ -2,8 +2,7 @@ package unet.jtorrent.trackers.udp.messages;
 
 import unet.jtorrent.trackers.udp.messages.inter.MessageAction;
 import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
-import unet.jtorrent.utils.inter.PeerUtils;
-import unet.kad4.utils.net.AddressUtils;
+import unet.jtorrent.utils.PeerUtils;
 
 import java.net.*;
 import java.util.ArrayList;

@@ -25,6 +25,7 @@ public class TorrentClient {
         torrents = new ArrayList<>();
         trackers = new ArrayList<>();
         udp = new UDPAnnounceClient();
+        //download = new DownloadClient();
     }
 
     public void start()throws SocketException {
@@ -106,6 +107,14 @@ public class TorrentClient {
 
     public UDPAnnounceClient getUDPClient(){
         return udp;
+    }
+
+    public byte[] getPeerID(){
+        return new byte[]{ 0x2d, 0x54, 0x52, 0x33, 0x30, 0x30, 0x30, 0x2d, 0x32, 0x6f, 0x71, 0x72, 0x72, 0x70, 0x78, 0x62, 0x31, 0x30, 0x32, 0x32 };
+    }
+
+    public int getTCPPort(){
+        return 6969;
     }
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
