@@ -2,6 +2,7 @@ package unet.jtorrent.announce.inter;
 
 import unet.jtorrent.TorrentClient;
 import unet.jtorrent.utils.Torrent;
+import unet.jtorrent.utils.TorrentManager;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -9,14 +10,13 @@ import java.util.List;
 
 public abstract class Tracker {
 
-    protected TorrentClient client;
-    protected Torrent torrent;
-    protected List<InetSocketAddress> peers;
+    protected TorrentManager manager;
+    protected List<PeerListener> listeners;
+    protected int peers = 0;
 
-    public Tracker(TorrentClient client, Torrent torrent){
-        this.client = client;
-        this.torrent = torrent;
-        peers = new ArrayList<>();
+    public Tracker(TorrentManager manager){
+        this.manager = manager;
+        listeners = new ArrayList<>();
     }
 
     public void announce(){
@@ -27,7 +27,15 @@ public abstract class Tracker {
 
     public abstract void scrape();
 
-    public List<InetSocketAddress> getAllPeers(){
+    public int getTotalPeers(){
         return peers;
+    }
+
+    public void addPeerListener(PeerListener listener){
+        listeners.add(listener);
+    }
+
+    public void removePeerListener(PeerListener listener){
+        listeners.remove(listener);
     }
 }

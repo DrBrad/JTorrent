@@ -108,4 +108,8 @@ public class AnnounceResponse extends MessageBase {
     public List<InetSocketAddress> getAllPeers(){
         return peers;
     }
+
+    public int getTotalPeers(){
+        return peers.size();
+    }
 }

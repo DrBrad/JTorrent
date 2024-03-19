@@ -1,6 +1,7 @@
 package unet.jtorrent.announce;
 
 import unet.jtorrent.TorrentClient;
+import unet.jtorrent.announce.inter.PeerListener;
 import unet.jtorrent.net.trackers.udp.ResponseCallback;
 import unet.jtorrent.net.trackers.udp.messages.AnnounceRequest;
 import unet.jtorrent.net.trackers.udp.messages.AnnounceResponse;
@@ -10,6 +11,7 @@ import unet.jtorrent.announce.inter.AnnounceEvent;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
 import unet.jtorrent.announce.inter.Tracker;
 import unet.jtorrent.utils.Torrent;
+import unet.jtorrent.utils.TorrentManager;
 
 import java.io.IOException;
 import java.net.*;
@@ -21,8 +23,8 @@ public class UDPTracker extends Tracker {
     private long[] connectionIDs;
     private int port, key;
 
-    public UDPTracker(TorrentClient client, Torrent torrent, URI uri)throws UnknownHostException, NoSuchAlgorithmException {
-        super(client, torrent);
+    public UDPTracker(TorrentManager manager, URI uri)throws UnknownHostException, NoSuchAlgorithmException {
+        super(manager);
 
         addresses = InetAddress.getAllByName(uri.getHost());
         if(uri.getPort() != 0){
@@ -53,7 +55,7 @@ public class UDPTracker extends Tracker {
         request.setDestination(addresses[i], port);
 
         try{
-            client.getUdpAnnounceSocket().send(request, new ResponseCallback(){
+            manager.getClient().getUdpAnnounceSocket().send(request, new ResponseCallback(){
                 @Override
                 public void onResponse(MessageBase message){
                     ConnectResponse response = (ConnectResponse) message;
@@ -78,28 +80,31 @@ public class UDPTracker extends Tracker {
         request.setDestination(addresses[i], port);
         request.setConnectionID(connectionIDs[i]);
         request.setEvent(event);
-        request.setInfoHash(torrent.getInfo().getHash());
-        request.setPeerID(client.getPeerID()); //GRAB FROM CLIENT...
-        request.setDownloaded(torrent.getDownloaded());
-        request.setLeft(torrent.getLeft()); //MUST CALC THE AMMOUNT WE NEED...
-        request.setUploaded(torrent.getUploaded());
-        request.setNumWant(client.getMaxPeersPerRequest());
+        request.setInfoHash(manager.getTorrent().getInfo().getHash());
+        request.setPeerID(manager.getClient().getPeerID()); //GRAB FROM CLIENT...
+        request.setDownloaded(manager.getDownloaded());
+        request.setLeft(manager.getLeft()); //MUST CALC THE AMMOUNT WE NEED...
+        request.setUploaded(manager.getUploaded());
+        request.setNumWant(manager.getClient().getMaxPeersPerRequest());
         request.setKey(key);
-        request.setPort(client.getTCPPort());
+        request.setPort(manager.getClient().getTCPPort());
 
         try{
-            client.getUdpAnnounceSocket().send(request, new ResponseCallback(){
+            manager.getClient().getUdpAnnounceSocket().send(request, new ResponseCallback(){
                 @Override
                 public void onResponse(MessageBase message){
                     AnnounceResponse response = (AnnounceResponse) message;
-                    peers.addAll(response.getAllPeers());
 
-                    for(InetSocketAddress address : response.getAllPeers()){
-                        //System.out.println("UDP: "+address.getAddress().getHostAddress()+" : "+address.getPort());
+                    peers += response.getTotalPeers();
+
+                    if(!listeners.isEmpty()){
+                        for(PeerListener listener : listeners){
+                            listener.onPeersReceived(response.getAllPeers());
+                        }
                     }
 
                     //System.out.println("SEEDERS: "+response.getSeeders()+"  LEACHERS: "+response.getLeachers()+"  INTERVAL: "+response.getInterval());
-                    System.out.println("UDP: "+response.getOrigin().getAddress().getHostAddress()+":"+response.getOrigin().getPort()+" GOT PEERS: "+peers.size());
+                    System.out.println("UDP: "+response.getOrigin().getAddress().getHostAddress()+":"+response.getOrigin().getPort()+" GOT PEERS: "+peers);
                 }
             });
 

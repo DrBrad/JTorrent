@@ -1,5 +1,6 @@
 package unet.jtorrent.net.trackers.udp.client;
 
+import unet.jtorrent.TorrentClient;
 import unet.jtorrent.net.trackers.udp.Call;
 import unet.jtorrent.net.trackers.udp.ResponseCallback;
 import unet.jtorrent.net.trackers.udp.messages.*;
@@ -15,6 +16,7 @@ import java.net.SocketException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
 
 public class UDPTrackerSocket {
 
@@ -25,12 +27,14 @@ public class UDPTrackerSocket {
     //TRANSACTION_ID
 
     //private InetSocketAddress address;
+    private ExecutorService executor;
     private final ConcurrentLinkedQueue<DatagramPacket> receivePool;
     private SecureRandom random;
     private ResponseTracker tracker;
     private DatagramSocket socket;
 
-    public UDPTrackerSocket(){
+    public UDPTrackerSocket(ExecutorService executor){
+        this.executor = executor;
         //URI uri = new URI(link);
         //address = new InetSocketAddress(InetAddress.getByName(uri.getHost()), uri.getPort());
         receivePool = new ConcurrentLinkedQueue<>();
@@ -56,7 +60,7 @@ public class UDPTrackerSocket {
 
         System.out.println("Started UDP Tracker Client");
 
-        new Thread(new Runnable(){
+        executor.submit(new Runnable(){
             @Override
             public void run(){
                 while(!socket.isClosed()){
@@ -72,9 +76,9 @@ public class UDPTrackerSocket {
                     }
                 }
             }
-        }).start();
+        });
 
-        new Thread(new Runnable(){
+        executor.submit(new Runnable(){
             @Override
             public void run(){
                 while(!socket.isClosed()){
@@ -85,7 +89,7 @@ public class UDPTrackerSocket {
                     tracker.removeStalled();
                 }
             }
-        }).start();
+        });
     }
 
     public void stop(){

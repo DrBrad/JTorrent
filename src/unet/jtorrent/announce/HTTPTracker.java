@@ -3,20 +3,24 @@ package unet.jtorrent.announce;
 import unet.bencode.io.BencodeReader;
 import unet.bencode.variables.BencodeObject;
 import unet.jtorrent.TorrentClient;
+import unet.jtorrent.announce.inter.PeerListener;
 import unet.jtorrent.announce.inter.Tracker;
 import unet.jtorrent.announce.inter.AnnounceEvent;
 import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.PeerUtils;
+import unet.jtorrent.utils.TorrentManager;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HTTPTracker extends Tracker {
 
     private URI uri;
 
-    public HTTPTracker(TorrentClient client, Torrent torrent, URI uri){
-        super(client, torrent);
+    public HTTPTracker(TorrentManager manager, URI uri){
+        super(manager);
         this.uri = uri;
     }
 
@@ -25,14 +29,14 @@ public class HTTPTracker extends Tracker {
         try{
             String url = String.format("%s?info_hash=%s&peer_id=%s&downloaded=%s&left=%s&uploaded=%s&event=%s&num_want=%s&port=%s",
                     uri.getScheme()+"://"+uri.getHost()+":"+uri.getPort()+"/announce",
-                    encodeHexString(torrent.getInfo().getHash()),
-                    encodeHexString(client.getPeerID()), //GRAB FROM CLIENT...
-                    torrent.getDownloaded(),
-                    torrent.getLeft(),
-                    torrent.getUploaded(),
+                    encodeHexString(manager.getTorrent().getInfo().getHash()),
+                    encodeHexString(manager.getClient().getPeerID()), //GRAB FROM CLIENT...
+                    manager.getDownloaded(),
+                    manager.getLeft(),
+                    manager.getUploaded(),
                     event.getName(),
-                    client.getMaxPeersPerRequest(),
-                    client.getTCPPort());
+                    manager.getClient().getMaxPeersPerRequest(),
+                    manager.getClient().getTCPPort());
 
             System.out.println(url);
 
@@ -55,6 +59,8 @@ public class HTTPTracker extends Tracker {
                 addr = new byte[18];
             }
             */
+
+            List<InetSocketAddress> peers = new ArrayList<>();
             addr = new byte[6];
 
             int position = 0;
@@ -64,8 +70,12 @@ public class HTTPTracker extends Tracker {
                 position += addr.length;
             }
 
-            for(InetSocketAddress address : peers){
-                //System.out.println("HTTP: "+address.getAddress().getHostAddress()+" : "+address.getPort());
+            this.peers = peers.size();
+
+            if(!listeners.isEmpty()){
+                for(PeerListener listener : listeners){
+                    listener.onPeersReceived(peers);
+                }
             }
 
             System.out.println("HTTP: "+uri.toString()+" GOT PEERS: "+peers.size());

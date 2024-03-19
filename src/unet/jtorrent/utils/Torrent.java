@@ -20,7 +20,6 @@ public class Torrent {
     private List<URI> announceList;
     private long creationDate;
     private TorrentInfo info;
-    private long downloaded = 0, uploaded = 0;
     private TorrentState state = TorrentState.WAITING;
 
     public Torrent(File file){
@@ -75,18 +74,6 @@ public class Torrent {
         }catch(IOException | NoSuchAlgorithmException ex){
             ex.printStackTrace();
         }
-    }
-
-    public long getDownloaded(){
-        return downloaded;
-    }
-
-    public long getLeft(){
-        return downloaded-info.getTotalLength();
-    }
-
-    public long getUploaded(){
-        return uploaded;
     }
 
     public TorrentState getState(){
