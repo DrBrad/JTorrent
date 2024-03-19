@@ -5,9 +5,11 @@ import unet.jtorrent.announce.HTTPTracker;
 import unet.jtorrent.announce.UDPTracker;
 import unet.jtorrent.announce.inter.PeerListener;
 import unet.jtorrent.announce.inter.Tracker;
+import unet.jtorrent.net.tunnel.inter.ConnectionListener;
 import unet.jtorrent.net.tunnel.tcp.TCPSocket;
 import unet.jtorrent.utils.inter.TrackerTypes;
 
+import javax.sound.midi.Track;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -18,23 +20,31 @@ import java.util.List;
 
 import static unet.jtorrent.TorrentClient.MAX_OPEN_CONNECTIONS;
 
-public class TorrentManager {
+public class TorrentManager implements ConnectionListener, PeerListener {
 
     private TorrentClient client;
     private Torrent torrent;
 
     private List<Tracker> trackers;
-    private List<InetSocketAddress> connections;
+    private DownloadManager downloadManager;
+    private List<InetSocketAddress> peers, connected;
     private long downloaded = 0, uploaded = 0;
 
     public TorrentManager(TorrentClient client, Torrent torrent){
         this.client = client;
         this.torrent = torrent;
+
+        downloadManager = new DownloadManager(torrent.getInfo().getPieces());
         trackers = new ArrayList<>();
-        connections = new ArrayList<>();
+        peers = new ArrayList<>();
+        connected = new ArrayList<>();
     }
 
     public void start(){
+        if(getLeft() == 0){
+            return;
+        }
+
         for(URI announce : torrent.getAnnounceList()){
             System.out.println(announce.toString());
             try{
@@ -55,36 +65,49 @@ public class TorrentManager {
 
         for(Tracker tracker : trackers){
             //LISTEN FOR PEERS... -> THEN START DOWNLOADING
-            tracker.addPeerListener(new PeerListener(){
-                @Override
-                public void onPeersReceived(List<InetSocketAddress> peers){
-                    for(InetSocketAddress address : peers){
-                        if(getTotalOpenConnections() >= MAX_OPEN_CONNECTIONS){
-                            break;
-                        }
-
-                        try{
-                            System.out.println("TCP CONNECT TO: "+address.getAddress().getHostAddress()+":"+address.getPort());
-                            openConnection(address);
-                        }catch(IOException e){
-                            e.printStackTrace();
-                            connections.remove(address);
-                        }
-                    }
-                }
-            });
+            tracker.addPeerListener(this);
             tracker.announce();
         }
     }
 
-    private void openConnection(InetSocketAddress address)throws IOException {
-        connections.add(address);
+    private void openConnection(InetSocketAddress address){
+        if(connected.size() >= MAX_OPEN_CONNECTIONS){
+            return;
+        }
 
-        new Thread(new TCPSocket(this, address)).start();
+        peers.remove(address);
+        if(getLeft() == 0){
+            return;
+        }
+
+        TCPSocket socket = new TCPSocket(this, address);
+        socket.addConnectionListener(this);
+
+        new Thread(socket).start();
     }
+
+    /*
+    public void closeConnection(InetSocketAddress address){
+        if(connected.contains(address)){
+            connected.get(address).close();
+        }
+    }
+
+    public void closeAllConnections(){
+        if(connected.isEmpty()){
+            for(InetSocketAddress address : connected){
+
+            }
+        }
+    }
+    */
 
     public TorrentClient getClient(){
         return client;
+    }
+
+    public DownloadManager getDownloadManager(){
+        return downloadManager;
     }
 
     public long getDownloaded(){
@@ -103,36 +126,40 @@ public class TorrentManager {
         return torrent;
     }
 
-    public synchronized int pollPiece(){
-        //POLL WILL TAKE INCOMPLETE LIST HASH AND MOVE IT TO WORKING ON
-        //
-
-        //piecesCompleted[i] = true;
-
-        return 0; //RETURN INDEX
+    public int getTotalPotentialPeers(){
+        return peers.size();
     }
 
-    public synchronized void completedPiece(int i){
-        //REMOVE PIECE FROM INCOMPLETE
+    public int getTotalOpenConnections(){
+        return connected.size();
     }
 
-    public synchronized void restorePiece(int i){
-        //IF PIECE FAILED DO TO (EXAMPLE: BROKEN SOCKET) REDO THE PIECE
-    }
+    @Override
+    public void onPeersReceived(List<InetSocketAddress> peers){
+        this.peers.addAll(peers);
+        System.out.println("RECEIVED PEERS: "+this.peers.size());
 
-    public synchronized void verify(){
-        //VERIFY ALL OF THE PIECES...
-    }
-
-    public synchronized int getTotalPotentialPeers(){
-        int i = 0;
-        for(Tracker tracker : trackers){
-            i += tracker.getTotalPeers();
+        for(InetSocketAddress address : peers){
+            openConnection(address);
         }
-        return i;
     }
 
-    public synchronized int getTotalOpenConnections(){
-        return connections.size();
+    @Override
+    public void onConnected(InetSocketAddress address){
+        connected.add(address);
+    }
+
+    @Override
+    public void onClosed(InetSocketAddress address){
+        connected.remove(address);
+
+        if(peers.isEmpty()){
+            for(Tracker tracker : trackers){
+                tracker.scrape();
+            }
+
+        }else{
+            openConnection(peers.get(0));
+        }
     }
 }

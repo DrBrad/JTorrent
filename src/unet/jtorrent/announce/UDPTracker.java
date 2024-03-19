@@ -96,6 +96,7 @@ public class UDPTracker extends Tracker {
                     AnnounceResponse response = (AnnounceResponse) message;
 
                     peers += response.getTotalPeers();
+                    System.out.println("UDP: "+response.getOrigin().getAddress().getHostAddress()+":"+response.getOrigin().getPort()+" GOT PEERS: "+peers);
 
                     if(!listeners.isEmpty()){
                         for(PeerListener listener : listeners){
@@ -104,7 +105,6 @@ public class UDPTracker extends Tracker {
                     }
 
                     //System.out.println("SEEDERS: "+response.getSeeders()+"  LEACHERS: "+response.getLeachers()+"  INTERVAL: "+response.getInterval());
-                    System.out.println("UDP: "+response.getOrigin().getAddress().getHostAddress()+":"+response.getOrigin().getPort()+" GOT PEERS: "+peers);
                 }
             });
 

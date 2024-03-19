@@ -1,8 +1,10 @@
 package unet.jtorrent.net.tunnel.tcp;
 
+import unet.jtorrent.net.tunnel.inter.ConnectionListener;
 import unet.jtorrent.net.tunnel.messages.KeepAliveMessage;
 import unet.jtorrent.net.tunnel.messages.RequestMessage;
 import unet.jtorrent.net.tunnel.messages.inter.MessageType;
+import unet.jtorrent.utils.Piece;
 import unet.jtorrent.utils.TorrentManager;
 
 import java.io.IOException;
@@ -10,7 +12,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class TCPSocket implements Runnable {
 
@@ -21,17 +25,63 @@ public class TCPSocket implements Runnable {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
+    private List<ConnectionListener> listeners;
     private byte[] peerID;
+    private Piece piece;
 
     public TCPSocket(TorrentManager manager, InetSocketAddress address){
         this.manager = manager;
         this.address = address;
+        listeners = new ArrayList<>();
     }
 
     @Override
     public void run(){
         try{
-            connect();
+            socket = new Socket();
+            socket.connect(address);
+            if(!socket.isConnected()){
+                close();
+                return;
+            }
+
+            in = socket.getInputStream();
+            out = socket.getOutputStream();
+
+            handshake();
+
+            if(!listeners.isEmpty()){
+                for(ConnectionListener listener : listeners){
+                    listener.onConnected(address);
+                }
+            }
+
+            socket.setKeepAlive(true);
+            out.write(new KeepAliveMessage().encode());
+
+            piece = manager.getDownloadManager().pollPiece();
+            if(piece == null){
+                close();
+                return;
+            }
+
+            System.out.println("STARTING ON PIECE:  "+piece.getIndex()+"  CONNECTED: "+manager.getTotalOpenConnections()+"  PEERS: "+manager.getTotalPotentialPeers());
+
+            //INTERESTED, REQUEST, OR PIECE
+            RequestMessage message = new RequestMessage();
+            message.setIndex(piece.getIndex());
+            message.setBegin(piece.getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
+            message.setLength(manager.getTorrent().getInfo().getPieceLength());
+            out.write(message.encode());
+
+            //START READING THE PIECE
+
+            byte[] buf = new byte[4096];
+            in.read(buf);
+            System.out.println(new String(buf));
+
+            manager.getDownloadManager().completedPiece(piece);
+
         }catch(IOException e){
             e.printStackTrace();
 
@@ -41,26 +91,6 @@ public class TCPSocket implements Runnable {
             }catch(IOException e){
             }
         }
-    }
-
-    public void connect()throws IOException {
-        socket = new Socket();
-        socket.connect(address);
-        in = socket.getInputStream();
-        out = socket.getOutputStream();
-
-        handshake();
-
-        socket.setKeepAlive(true);
-        out.write(new KeepAliveMessage().encode());
-
-        //INTERESTED, REQUEST, OR PIECE
-        RequestMessage message = new RequestMessage();
-        message.setIndex(manager.pollPiece());
-        message.setBegin(0); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
-        message.setLength(manager.getTorrent().getInfo().getPieceLength());
-        out.write(message.encode());
-
     }
 
     public void handshake()throws IOException {
@@ -98,7 +128,7 @@ public class TCPSocket implements Runnable {
         byte[] protocolHeader = new byte[PROTOCOL_HEADER.length];
         in.read(protocolHeader);
         if(!Arrays.equals(protocolHeader, PROTOCOL_HEADER)){
-            throw new IOException("Protocol header is incorrect.");
+            throw new IOException("Protocol header is incorrect \""+new String(protocolHeader, "ISO-8859-1")+"\"");
         }
 
         in.skip(8); //RESERVED SKIP
@@ -117,17 +147,39 @@ public class TCPSocket implements Runnable {
     }
 
     public void close()throws IOException {
+        if(piece != null){
+            manager.getDownloadManager().failedPiece(piece);
+        }
+
+        if(!listeners.isEmpty()){
+            for(ConnectionListener listener : listeners){
+                listener.onClosed(address);
+            }
+        }
+
         if(!socket.isClosed()){
             if(!socket.isInputShutdown()){
-                in.close();
+                socket.shutdownInput();
             }
 
             if(!socket.isOutputShutdown()){
-                out.close();
+                socket.shutdownOutput();
             }
 
             socket.close();
         }
+    }
+
+    public boolean containsConnectionListener(ConnectionListener listener){
+        return listeners.contains(listener);
+    }
+
+    public void addConnectionListener(ConnectionListener listener){
+        listeners.add(listener);
+    }
+
+    public void removeConnectionListener(ConnectionListener listener){
+        listeners.remove(listener);
     }
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();

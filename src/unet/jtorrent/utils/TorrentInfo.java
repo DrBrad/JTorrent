@@ -15,7 +15,7 @@ public class TorrentInfo {
     private int pieceLength;
     private long length;
     private byte[] infoHash;
-    private List<byte[]> pieces;
+    private List<Piece> pieces;
     private List<TorrentFile> files;
 
     public TorrentInfo(BencodeObject ben)throws NoSuchAlgorithmException  {
@@ -30,10 +30,10 @@ public class TorrentInfo {
         if(ben.containsKey("pieces")){
             pieces = new ArrayList<>();
 
+            byte[] buf = new byte[20];
             for(int i = 0; i < ben.getBytes("pieces").length/PIECE_LENGTH; i++){
-                byte[] buf = new byte[20];
                 System.arraycopy(ben.getBytes("pieces"), i*20, buf, 0, PIECE_LENGTH);
-                pieces.add(buf);
+                pieces.add(new Piece(buf, i));
             }
         }
 
@@ -59,7 +59,7 @@ public class TorrentInfo {
         return pieceLength;
     }
 
-    public List<byte[]> getPieces(){
+    public List<Piece> getPieces(){
         return pieces;
     }
 

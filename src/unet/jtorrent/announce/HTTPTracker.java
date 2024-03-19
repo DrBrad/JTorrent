@@ -73,15 +73,14 @@ public class HTTPTracker extends Tracker {
                         position += addr.length;
                     }
 
-                    peers = peersList.size();
+                    peers += peersList.size();
+                    System.out.println("HTTP: "+uri.toString()+" GOT PEERS: "+peers);
 
                     if(!listeners.isEmpty()){
                         for(PeerListener listener : listeners){
                             listener.onPeersReceived(peersList);
                         }
                     }
-
-                    System.out.println("HTTP: "+uri.toString()+" GOT PEERS: "+peers);
 
                 }catch(IOException e){
                     e.printStackTrace();

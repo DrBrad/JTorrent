@@ -5,7 +5,7 @@ public class MessageBase {
     protected MessageType type;
 
     public byte[] encode(){
-        byte[] buf = new byte[type.getLength()+4];
+        byte[] buf = new byte[type.getLength()+5];
 
         buf[0] = ((byte) (type.getLength() >> 24));
         buf[1] = ((byte) (type.getLength() >> 16));
