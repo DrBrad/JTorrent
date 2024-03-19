@@ -1,14 +1,14 @@
-package unet.jtorrent.trackers.udp.client;
+package unet.jtorrent.announce;
 
 import unet.jtorrent.TorrentClient;
-import unet.jtorrent.trackers.udp.ResponseCallback;
-import unet.jtorrent.trackers.udp.messages.AnnounceRequest;
-import unet.jtorrent.trackers.udp.messages.AnnounceResponse;
-import unet.jtorrent.trackers.udp.messages.ConnectRequest;
-import unet.jtorrent.trackers.udp.messages.ConnectResponse;
-import unet.jtorrent.trackers.inter.AnnounceEvent;
-import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
-import unet.jtorrent.trackers.inter.TrackerClient;
+import unet.jtorrent.net.trackers.udp.ResponseCallback;
+import unet.jtorrent.net.trackers.udp.messages.AnnounceRequest;
+import unet.jtorrent.net.trackers.udp.messages.AnnounceResponse;
+import unet.jtorrent.net.trackers.udp.messages.ConnectRequest;
+import unet.jtorrent.net.trackers.udp.messages.ConnectResponse;
+import unet.jtorrent.announce.inter.AnnounceEvent;
+import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
+import unet.jtorrent.announce.inter.TrackerClient;
 import unet.jtorrent.utils.Torrent;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.security.SecureRandom;
 public class UDPTrackerClient extends TrackerClient {
     private InetAddress[] addresses;
     private long[] connectionIDs;
-    private int port, key, numWant = -1;
+    private int port, key;
 
     public UDPTrackerClient(TorrentClient client, Torrent torrent, URI uri)throws UnknownHostException, NoSuchAlgorithmException {
         super(client, torrent);
@@ -53,7 +53,7 @@ public class UDPTrackerClient extends TrackerClient {
         request.setDestination(addresses[i], port);
 
         try{
-            client.getUDPClient().send(request, new ResponseCallback(){
+            client.getUdpAnnounceSocket().send(request, new ResponseCallback(){
                 @Override
                 public void onResponse(MessageBase message){
                     ConnectResponse response = (ConnectResponse) message;
@@ -83,12 +83,12 @@ public class UDPTrackerClient extends TrackerClient {
         request.setDownloaded(torrent.getDownloaded());
         request.setLeft(torrent.getLeft()); //MUST CALC THE AMMOUNT WE NEED...
         request.setUploaded(torrent.getUploaded());
-        request.setNumWant(numWant);
+        request.setNumWant(client.getMaxPeersPerRequest());
         request.setKey(key);
         request.setPort(client.getTCPPort());
 
         try{
-            client.getUDPClient().send(request, new ResponseCallback(){
+            client.getUdpAnnounceSocket().send(request, new ResponseCallback(){
                 @Override
                 public void onResponse(MessageBase message){
                     AnnounceResponse response = (AnnounceResponse) message;
@@ -106,10 +106,6 @@ public class UDPTrackerClient extends TrackerClient {
         }catch(IOException e){
             e.printStackTrace();
         }
-    }
-
-    public void setNumWant(int numWant){
-        this.numWant = numWant;
     }
 
     private byte[] stringToHex(String s){

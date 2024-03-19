@@ -1,4 +1,4 @@
-package unet.jtorrent.trackers.inter;
+package unet.jtorrent.announce.inter;
 
 import unet.jtorrent.TorrentClient;
 import unet.jtorrent.utils.Torrent;
@@ -12,7 +12,6 @@ public abstract class TrackerClient {
     protected TorrentClient client;
     protected Torrent torrent;
     protected List<InetSocketAddress> peers;
-    protected int numWant = -1;
 
     public TrackerClient(TorrentClient client, Torrent torrent){
         this.client = client;

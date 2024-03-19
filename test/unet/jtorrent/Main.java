@@ -36,6 +36,7 @@ public class Main {
         */
 
         TorrentClient manager = new TorrentClient();
+        manager.setMaxPeersPerRequest(80);
         manager.start();
 
         manager.startTorrent(new File("/home/brad/Downloads/torrent.torrent"));

@@ -1,14 +1,15 @@
-package unet.jtorrent.trackers.udp.client;
+package unet.jtorrent.net.trackers.udp.client;
 
-import unet.jtorrent.trackers.udp.messages.ScrapeResponse;
+import unet.jtorrent.net.trackers.udp.Call;
+import unet.jtorrent.net.trackers.udp.ResponseCallback;
+import unet.jtorrent.net.trackers.udp.messages.ConnectResponse;
+import unet.jtorrent.net.trackers.udp.messages.ErrorResponse;
+import unet.jtorrent.net.trackers.udp.messages.ScrapeResponse;
+import unet.jtorrent.net.trackers.udp.messages.inter.MessageAction;
+import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
 import unet.kad4.utils.ByteWrapper;
 import unet.kad4.utils.net.AddressUtils;
-import unet.jtorrent.trackers.udp.*;
-import unet.jtorrent.trackers.udp.messages.AnnounceResponse;
-import unet.jtorrent.trackers.udp.messages.ConnectResponse;
-import unet.jtorrent.trackers.udp.messages.ErrorResponse;
-import unet.jtorrent.trackers.udp.messages.inter.MessageAction;
-import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
+import unet.jtorrent.net.trackers.udp.messages.AnnounceResponse;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class UDPAnnounceClient {
+public class UDPTrackerSocket {
 
     //BEP 15
     public static final int TID_LENGTH = 4;
@@ -32,7 +33,7 @@ public class UDPAnnounceClient {
     private ResponseTracker tracker;
     private DatagramSocket socket;
 
-    public UDPAnnounceClient(){
+    public UDPTrackerSocket(){
         //URI uri = new URI(link);
         //address = new InetSocketAddress(InetAddress.getByName(uri.getHost()), uri.getPort());
         receivePool = new ConcurrentLinkedQueue<>();
@@ -161,19 +162,6 @@ public class UDPAnnounceClient {
         response.decode(buf, packet.getOffset()+8, packet.getLength()-9);
         call.getCallback().onResponse(response);
     }
-
-    /*
-    public void connect(InetSocketAddress address)throws IOException {
-        ConnectRequest request = new ConnectRequest();
-        request.setDestination(address);
-    }
-
-    public void announce()throws SocketException, UnknownHostException {
-
-        byte[] buf = null;
-
-    }
-    */
 
     public void send(MessageBase message, ResponseCallback callback)throws IOException {
         if(message.getDestination() == null){

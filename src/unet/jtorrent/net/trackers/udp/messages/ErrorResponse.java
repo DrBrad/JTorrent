@@ -1,7 +1,7 @@
-package unet.jtorrent.trackers.udp.messages;
+package unet.jtorrent.net.trackers.udp.messages;
 
-import unet.jtorrent.trackers.udp.messages.inter.MessageAction;
-import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
+import unet.jtorrent.net.trackers.udp.messages.inter.MessageAction;
+import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
 
 public class ErrorResponse extends MessageBase {
 

@@ -1,4 +1,4 @@
-package unet.jtorrent.trackers.udp.messages.inter;
+package unet.jtorrent.net.trackers.udp.messages.inter;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

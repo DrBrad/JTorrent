@@ -1,6 +1,6 @@
-package unet.jtorrent.trackers.udp;
+package unet.jtorrent.net.trackers.udp;
 
-import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
+import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
 
 public class Call {
 

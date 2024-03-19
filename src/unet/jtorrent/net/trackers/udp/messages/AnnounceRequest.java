@@ -1,8 +1,8 @@
-package unet.jtorrent.trackers.udp.messages;
+package unet.jtorrent.net.trackers.udp.messages;
 
-import unet.jtorrent.trackers.inter.AnnounceEvent;
-import unet.jtorrent.trackers.udp.messages.inter.MessageAction;
-import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
+import unet.jtorrent.announce.inter.AnnounceEvent;
+import unet.jtorrent.net.trackers.udp.messages.inter.MessageAction;
+import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;

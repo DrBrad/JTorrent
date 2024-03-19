@@ -1,10 +1,10 @@
-package unet.jtorrent.trackers.http.client;
+package unet.jtorrent.announce;
 
 import unet.bencode.io.BencodeReader;
 import unet.bencode.variables.BencodeObject;
 import unet.jtorrent.TorrentClient;
-import unet.jtorrent.trackers.inter.TrackerClient;
-import unet.jtorrent.trackers.inter.AnnounceEvent;
+import unet.jtorrent.announce.inter.TrackerClient;
+import unet.jtorrent.announce.inter.AnnounceEvent;
 import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.PeerUtils;
 
@@ -31,7 +31,7 @@ public class HTTPTrackerClient extends TrackerClient {
                     torrent.getLeft(),
                     torrent.getUploaded(),
                     event.getName(),
-                    numWant,
+                    client.getMaxPeersPerRequest(),
                     client.getTCPPort());
 
             System.out.println(url);

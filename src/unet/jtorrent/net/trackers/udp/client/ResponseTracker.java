@@ -1,7 +1,7 @@
-package unet.jtorrent.trackers.udp.client;
+package unet.jtorrent.net.trackers.udp.client;
 
+import unet.jtorrent.net.trackers.udp.Call;
 import unet.kad4.utils.ByteWrapper;
-import unet.jtorrent.trackers.udp.Call;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,12 +13,12 @@ public class ResponseTracker {
     public static final int MAX_ACTIVE_CALLS = 512;
 
     //public static final long STALLED_TIME = 60000;
-    private final UDPAnnounceClient client;
+    private final UDPTrackerSocket client;
     private final LinkedHashMap<ByteWrapper, Call> calls;
     //private final ConcurrentHashMap<ByteWrapper, RequestEvent> calls;
     //private final ConcurrentLinkedQueue<ByteWrapper> callsOrder;
 
-    public ResponseTracker(UDPAnnounceClient client){
+    public ResponseTracker(UDPTrackerSocket client){
         this.client = client;
         calls = new LinkedHashMap<>(MAX_ACTIVE_CALLS);
         //calls = new ConcurrentHashMap<>(MAX_ACTIVE_CALLS);

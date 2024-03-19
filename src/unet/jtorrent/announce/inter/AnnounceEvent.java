@@ -1,4 +1,4 @@
-package unet.jtorrent.trackers.inter;
+package unet.jtorrent.announce.inter;
 
 public enum AnnounceEvent {
 

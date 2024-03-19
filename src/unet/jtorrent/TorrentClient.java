@@ -1,10 +1,10 @@
 package unet.jtorrent;
 
-import unet.jtorrent.trackers.http.client.HTTPTrackerClient;
-import unet.jtorrent.trackers.udp.client.UDPAnnounceClient;
-import unet.jtorrent.trackers.udp.client.UDPTrackerClient;
+import unet.jtorrent.announce.HTTPTrackerClient;
+import unet.jtorrent.net.trackers.udp.client.UDPTrackerSocket;
+import unet.jtorrent.announce.UDPTrackerClient;
 import unet.jtorrent.utils.Torrent;
-import unet.jtorrent.trackers.inter.TrackerClient;
+import unet.jtorrent.announce.inter.TrackerClient;
 import unet.jtorrent.utils.inter.TrackerTypes;
 
 import java.io.File;
@@ -17,26 +17,27 @@ import java.util.List;
 
 public class TorrentClient {
 
-    private UDPAnnounceClient udp;
+    private UDPTrackerSocket udpAnnounce;
     private List<Torrent> torrents;
     private List<List<TrackerClient>> trackers;
+    private int maxPeersPerRequest = -1;
 
     public TorrentClient(){
         torrents = new ArrayList<>();
         trackers = new ArrayList<>();
-        udp = new UDPAnnounceClient();
+        udpAnnounce = new UDPTrackerSocket();
         //download = new DownloadClient();
     }
 
     public void start()throws SocketException {
-        if(!udp.isRunning()){
-            udp.start();
+        if(!udpAnnounce.isRunning()){
+            udpAnnounce.start();
         }
     }
 
     public void stop(){
-        if(udp.isRunning()){
-            udp.stop();
+        if(udpAnnounce.isRunning()){
+            udpAnnounce.stop();
         }
     }
 
@@ -105,8 +106,16 @@ public class TorrentClient {
         return trackers.get(i);
     }
 
-    public UDPAnnounceClient getUDPClient(){
-        return udp;
+    public UDPTrackerSocket getUdpAnnounceSocket(){
+        return udpAnnounce;
+    }
+
+    public int getMaxPeersPerRequest(){
+        return maxPeersPerRequest;
+    }
+
+    public void setMaxPeersPerRequest(int maxPeersPerRequest){
+        this.maxPeersPerRequest = maxPeersPerRequest;
     }
 
     public byte[] getPeerID(){
