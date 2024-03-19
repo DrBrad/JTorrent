@@ -115,7 +115,7 @@ public class TorrentManager implements ConnectionListener, PeerListener {
     }
 
     public long getLeft(){
-        return downloaded-torrent.getInfo().getTotalLength();
+        return torrent.getInfo().getTotalLength()-downloaded;
     }
 
     public long getUploaded(){
