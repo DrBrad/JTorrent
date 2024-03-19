@@ -72,7 +72,6 @@ public class TCPSocket implements Runnable {
 
         // Send the handshake message
         //out.write(message);
-        System.out.println("READING TIME");
 
         /*
         byte[] buf = new byte[4096];
@@ -80,32 +79,45 @@ public class TCPSocket implements Runnable {
         */
 
         if(in.read() != PROTOCOL_HEADER.length){
+            System.err.println("PROTOCOL HEADER LENGTH ISNT CORRECT");
             return; //CLOSE
         }
 
         byte[] protocolHeader = new byte[PROTOCOL_HEADER.length];
         in.read(protocolHeader);
         if(!Arrays.equals(protocolHeader, PROTOCOL_HEADER)){
+            System.err.println("PROTOCOL HEADER ISNT CORRECT");
             return; //CLOSE
         }
 
-        //in.skip(8); //RESERVED SKIP
+        in.skip(8); //RESERVED SKIP
 
-        //in.read()
+        byte[] infoHash = new byte[20];
+        in.read(infoHash);
 
-
-
-
-
-
-        System.out.println(new String(protocolHeader, "ISO-8859-1"));
-
+        if(!Arrays.equals(infoHash, manager.getTorrent().getInfo().getHash())){
+            System.err.println("INFO_HASH ISNT CORRECT");
+            return; //CLOSE
+        }
 
 
 
+        byte[] peerID = new byte[20];
+        in.read(peerID);
+
+        //SENDERS PEER_ID
 
 
-        out.flush();
+
+
+        System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID));
+
+
+
+
+
+
+        //out.flush();
     }
 
     public void close()throws IOException {
@@ -120,5 +132,16 @@ public class TCPSocket implements Runnable {
 
             socket.close();
         }
+    }
+
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 }
