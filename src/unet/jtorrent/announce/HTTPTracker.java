@@ -26,7 +26,7 @@ public class HTTPTracker extends Tracker {
 
     @Override
     public void announce(AnnounceEvent event){
-        manager.getClient().getExecutor().submit(new Runnable(){
+        new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
@@ -87,7 +87,7 @@ public class HTTPTracker extends Tracker {
                     e.printStackTrace();
                 }
             }
-        }, 9);
+        }).start();
     }
 
     @Override

@@ -81,7 +81,7 @@ public class TorrentManager {
     private void openConnection(InetSocketAddress address)throws IOException {
         connections.add(address);
 
-        client.getExecutor().submit(new TCPSocket(this, address));
+        new Thread(new TCPSocket(this, address)).start();
     }
 
     public TorrentClient getClient(){

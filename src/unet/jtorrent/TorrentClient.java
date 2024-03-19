@@ -3,7 +3,6 @@ package unet.jtorrent;
 import unet.jtorrent.net.trackers.udp.client.UDPTrackerSocket;
 import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.TorrentManager;
-import unet.jtorrent.utils.pool.PBQThreadPoolExecutor;
 
 import java.io.File;
 import java.net.SocketException;
@@ -17,14 +16,10 @@ public class TorrentClient {
     private UDPTrackerSocket udpAnnounce;
     private List<TorrentManager> torrents;
     private int maxPeersPerRequest = -1;
-    private PBQThreadPoolExecutor executor;
 
     public TorrentClient(){
         torrents = new ArrayList<>();
-        PriorityBlockingQueue<Runnable> pbq = new PriorityBlockingQueue<>(1024);
-        executor = new PBQThreadPoolExecutor(1024, 2048, 1000L, TimeUnit.MILLISECONDS, pbq);
-        //executor = Executors.newFixedThreadPool(10);
-        udpAnnounce = new UDPTrackerSocket(executor);
+        udpAnnounce = new UDPTrackerSocket();
         //download = new DownloadClient();
     }
 
@@ -37,10 +32,6 @@ public class TorrentClient {
     public synchronized void stop(){
         if(udpAnnounce.isRunning()){
             udpAnnounce.stop();
-        }
-
-        if(!executor.isShutdown()){
-            executor.shutdown();
         }
     }
 
@@ -90,10 +81,6 @@ public class TorrentClient {
 
     public UDPTrackerSocket getUdpAnnounceSocket(){
         return udpAnnounce;
-    }
-
-    public PBQThreadPoolExecutor getExecutor(){
-        return executor;
     }
 
     public int getMaxPeersPerRequest(){

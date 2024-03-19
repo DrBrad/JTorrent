@@ -5,7 +5,6 @@ import unet.jtorrent.net.trackers.udp.ResponseCallback;
 import unet.jtorrent.net.trackers.udp.messages.*;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageAction;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
-import unet.jtorrent.utils.pool.PBQThreadPoolExecutor;
 import unet.kad4.utils.ByteWrapper;
 import unet.kad4.utils.net.AddressUtils;
 
@@ -26,14 +25,12 @@ public class UDPTrackerSocket {
     //TRANSACTION_ID
 
     //private InetSocketAddress address;
-    private PBQThreadPoolExecutor executor;
     private final ConcurrentLinkedQueue<DatagramPacket> receivePool;
     private SecureRandom random;
     private ResponseTracker tracker;
     private DatagramSocket socket;
 
-    public UDPTrackerSocket(PBQThreadPoolExecutor executor){
-        this.executor = executor;
+    public UDPTrackerSocket(){
         //URI uri = new URI(link);
         //address = new InetSocketAddress(InetAddress.getByName(uri.getHost()), uri.getPort());
         receivePool = new ConcurrentLinkedQueue<>();
@@ -59,7 +56,7 @@ public class UDPTrackerSocket {
 
         System.out.println("Started UDP Tracker Client");
 
-        executor.submit(new Runnable(){
+        new Thread(new Runnable(){
             @Override
             public void run(){
                 while(!socket.isClosed()){
@@ -69,26 +66,20 @@ public class UDPTrackerSocket {
 
                         if(packet != null){
                             receivePool.offer(packet);
+                            new Thread(new Runnable(){
+                                @Override
+                                public void run(){
+                                    onReceive(packet);
+                                    tracker.removeStalled();
+                                }
+                            });
                         }
                     }catch(IOException e){
                         e.printStackTrace();
                     }
                 }
             }
-        }, 10);
-
-        executor.submit(new Runnable(){
-            @Override
-            public void run(){
-                while(!socket.isClosed()){
-                    if(!receivePool.isEmpty()){
-                        onReceive(receivePool.poll());
-                    }
-
-                    tracker.removeStalled();
-                }
-            }
-        }, 10);
+        }).start();
     }
 
     public void stop(){
