@@ -55,6 +55,14 @@ public class TCPSocket implements Runnable {
         //byte[] reservedBytes = new byte[8]; // Reserved bytes are typically all zeros
         //byte[] message = new byte[68]; // Handshake message is 68 bytes in length
 
+        /*
+        +----------------------------------+--------------------------+------------------------+----------------------+
+        | Protocol Header (20 bytes)       | Reserved Bytes (8 bytes) | Info Hash (20 bytes)   | Peer ID (20 bytes)   |
+        +----------------------------------+--------------------------+------------------------+----------------------+
+        | "BitTorrent protocol" (19 bytes) | 0x00 0x00 ... 0x00       | [Info Hash] (20 bytes) | [Peer ID] (20 bytes) |
+        +----------------------------------+--------------------------+------------------------+----------------------+
+        */
+
         out.write((byte) PROTOCOL_HEADER.length);
         out.write(PROTOCOL_HEADER);//PROTOCOL_HEADER);
         out.write(new byte[8]);
