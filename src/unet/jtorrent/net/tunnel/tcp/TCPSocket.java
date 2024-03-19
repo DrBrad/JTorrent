@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class TCPSocket implements Runnable {
 
@@ -65,10 +66,36 @@ public class TCPSocket implements Runnable {
         //out.write(message);
         System.out.println("READING TIME");
 
+        /*
         byte[] buf = new byte[4096];
         int len = in.read(buf);
+        */
 
-        System.out.println(new String(buf, 0, len));
+        if(in.read() != PROTOCOL_HEADER.length){
+            return; //CLOSE
+        }
+
+        byte[] protocolHeader = new byte[PROTOCOL_HEADER.length];
+        in.read(protocolHeader);
+        if(!Arrays.equals(protocolHeader, PROTOCOL_HEADER)){
+            return; //CLOSE
+        }
+
+        //in.skip(8); //RESERVED SKIP
+
+        //in.read()
+
+
+
+
+
+
+        System.out.println(new String(protocolHeader, "ISO-8859-1"));
+
+
+
+
+
 
         out.flush();
     }
