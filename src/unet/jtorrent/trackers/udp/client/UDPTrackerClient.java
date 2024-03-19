@@ -94,6 +94,10 @@ public class UDPTrackerClient extends TrackerClient {
                     AnnounceResponse response = (AnnounceResponse) message;
                     peers.addAll(response.getAllPeers());
 
+                    for(InetSocketAddress address : response.getAllPeers()){
+                        System.out.println(address.getAddress().getHostAddress()+" : "+address.getPort());
+                    }
+
                     System.out.println("SEEDERS: "+response.getSeeders()+"  LEACHERS: "+response.getLeachers()+"  INTERVAL: "+response.getInterval());
                 }
             });

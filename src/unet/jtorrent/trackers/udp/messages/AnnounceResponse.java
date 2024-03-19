@@ -2,6 +2,7 @@ package unet.jtorrent.trackers.udp.messages;
 
 import unet.jtorrent.trackers.udp.messages.inter.MessageAction;
 import unet.jtorrent.trackers.udp.messages.inter.MessageBase;
+import unet.jtorrent.utils.inter.PeerUtils;
 import unet.kad4.utils.net.AddressUtils;
 
 import java.net.*;
@@ -52,55 +53,9 @@ public class AnnounceResponse extends MessageBase {
         int position = off+12;
         while(position < len){
             System.arraycopy(buf, position, addr, 0, addr.length);
-            peers.add(unpackAddress(addr));
+            peers.add(PeerUtils.unpackAddress(addr));
             position += addr.length;
         }
-    }
-
-    private InetSocketAddress unpackAddress(byte[] buf){
-        try{
-            if(buf.length == 6){
-                InetAddress address = InetAddress.getByAddress(new byte[]{
-                        buf[0],
-                        buf[1],
-                        buf[2],
-                        buf[3]
-                });
-
-                //System.out.println(address.getHostAddress());
-                return new InetSocketAddress(address, (buf[4] & 0xff) << 8 | (buf[5] & 0xff));
-                //return new InetSocketAddress(address, ((buf[4] << 8) | buf[5] & 0xff));
-
-            }else if(buf.length == 18){
-                InetAddress address = InetAddress.getByAddress(new byte[]{
-                        buf[0],
-                        buf[1],
-                        buf[2],
-                        buf[3],
-
-                        buf[4],
-                        buf[5],
-                        buf[6],
-                        buf[7],
-
-                        buf[8],
-                        buf[9],
-                        buf[10],
-                        buf[11],
-
-                        buf[12],
-                        buf[13],
-                        buf[14],
-                        buf[15]
-                });
-
-                //return new InetSocketAddress(address, ((buf[16] << 8) | buf[17] & 0xff));
-                return new InetSocketAddress(address, (buf[16] & 0xff) << 8 | (buf[17] & 0xff));
-            }
-        }catch(UnknownHostException e){
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public void setInterval(int interval){

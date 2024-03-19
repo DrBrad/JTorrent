@@ -53,10 +53,10 @@ public class TorrentClient {
 
         for(URI announce : torrent.getAnnounceList()){
             System.out.println(announce.toString());
-            //try{
+            try{
                 switch(TrackerTypes.getFromScheme(announce.getScheme())){
                     case UDP:
-                        //trackerList.add(new UDPTrackerClient(this, torrent, announce));
+                        trackerList.add(new UDPTrackerClient(this, torrent, announce));
                         break;
 
                     case HTTP:
@@ -64,9 +64,9 @@ public class TorrentClient {
                         trackerList.add(new HTTPTrackerClient(this, torrent, announce));
                         break;
                 }
-            //}catch(UnknownHostException | NoSuchAlgorithmException e){
-            //    e.printStackTrace();
-            //}
+            }catch(UnknownHostException | NoSuchAlgorithmException e){
+                e.printStackTrace();
+            }
         }
 
         for(TrackerClient tracker : trackerList){

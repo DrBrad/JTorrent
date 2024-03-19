@@ -6,12 +6,11 @@ import unet.jtorrent.TorrentClient;
 import unet.jtorrent.trackers.inter.TrackerClient;
 import unet.jtorrent.trackers.inter.AnnounceEvent;
 import unet.jtorrent.utils.Torrent;
+import unet.jtorrent.utils.inter.PeerUtils;
+import unet.kad4.utils.net.AddressUtils;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URL;
+import java.net.*;
 
 public class HTTPTrackerClient extends TrackerClient {
 
@@ -47,13 +46,30 @@ public class HTTPTrackerClient extends TrackerClient {
 
             connection.disconnect();
 
+
+            byte[] addr;
+            /*
+            if(origin.getAddress() instanceof Inet4Address){
+                addr = new byte[6];
+
+            }else{
+                addr = new byte[18];
+            }
+            */
+            addr = new byte[6];
+
+            int position = 0;
+            while(position < ben.getBytes("peers").length){
+                System.arraycopy(ben.getBytes("peers"), position, addr, 0, addr.length);
+                peers.add(PeerUtils.unpackAddress(addr));
+                position += addr.length;
+            }
+
             System.out.println(ben);
 
         }catch(IOException e){
             e.printStackTrace();
         }
-
-
     }
 
     @Override
