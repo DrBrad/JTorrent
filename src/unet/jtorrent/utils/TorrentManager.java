@@ -116,6 +116,10 @@ public class TorrentManager {
         //REMOVE PIECE FROM INCOMPLETE
     }
 
+    public synchronized void restorePiece(int i){
+        //IF PIECE FAILED DO TO (EXAMPLE: BROKEN SOCKET) REDO THE PIECE
+    }
+
     public synchronized void verify(){
         //VERIFY ALL OF THE PIECES...
     }
