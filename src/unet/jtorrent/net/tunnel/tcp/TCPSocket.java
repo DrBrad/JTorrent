@@ -113,11 +113,20 @@ public class TCPSocket implements Runnable {
         System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID));
 
 
-
+        //sendMessage(PeerMessage.KEEP_ALIVE);
 
 
 
         //out.flush();
+    }
+
+    public void sendMessage(PeerMessage message)throws IOException {
+        out.write(new byte[]{
+                (byte) (message.getCode() >> 24),
+                (byte) (message.getCode() >> 16),
+                (byte) (message.getCode() >> 8),
+                (byte) message.getCode()
+        });
     }
 
     public void close()throws IOException {
