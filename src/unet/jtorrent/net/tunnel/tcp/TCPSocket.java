@@ -48,6 +48,11 @@ public class TCPSocket implements Runnable {
         out = socket.getOutputStream();
 
         handshake();
+
+        socket.setKeepAlive(true);
+        sendMessage(PeerMessage.KEEP_ALIVE);
+
+        //INTERESTED, REQUEST, OR PIECE
     }
 
     public void handshake()throws IOException {
@@ -122,11 +127,17 @@ public class TCPSocket implements Runnable {
 
     public void sendMessage(PeerMessage message)throws IOException {
         out.write(new byte[]{
-                (byte) (message.getCode() >> 24),
-                (byte) (message.getCode() >> 16),
-                (byte) (message.getCode() >> 8),
-                (byte) message.getCode()
+                (byte) (message.getLength() >> 24),
+                (byte) (message.getLength() >> 16),
+                (byte) (message.getLength() >> 8),
+                (byte) message.getLength()
         });
+
+        if(message.getLength() > 0){
+            out.write(message.getID());
+        }
+
+        //out.flush();
     }
 
     public void close()throws IOException {

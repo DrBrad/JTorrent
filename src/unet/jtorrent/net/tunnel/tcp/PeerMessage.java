@@ -2,6 +2,10 @@ package unet.jtorrent.net.tunnel.tcp;
 
 public enum PeerMessage {
     /*
+    https://wiki.theory.org/BitTorrentSpecification#Messages
+
+    - WHAT ABOUT KEEP_ALIVE...?
+
     0 - choke
     1 - unchoke
     2 - interested
@@ -12,55 +16,105 @@ public enum PeerMessage {
     7 - piece
     8 - cancel
     */
+    KEEP_ALIVE {
+        public int getLength(){
+            return 0;
+        }
+    },
     CHOKE {
-        public int getCode(){
+        public int getLength(){
+            return 1;
+        }
+
+        public byte getID(){
             return 0;
         }
     },
     UNCHOKE {
-        public int getCode(){
+        public int getLength(){
+            return 1;
+        }
+
+        public byte getID(){
             return 1;
         }
     },
     INTERESTED {
-        public int getCode(){
+        public int getLength(){
+            return 2;
+        }
+
+        public byte getID(){
             return 2;
         }
     },
     NOT_INTERESTED {
-        public int getCode(){
+        public int getLength(){
+            return 3;
+        }
+
+        public byte getID(){
             return 3;
         }
     },
     HAVE {
-        public int getCode(){
+        public int getLength(){
+            return 5;
+        }
+
+        public byte getID(){
             return 4;
         }
     },
     BITFIELD {
-        public int getCode(){
+        public int getLength(){ //+X
+            return 1;
+        }
+
+        public byte getID(){
             return 5;
         }
     },
     REQUEST {
-        public int getCode(){
+        public int getLength(){ //<index><begin><length>
+            return 13;
+        }
+
+        public byte getID(){
             return 6;
         }
     },
     PIECE {
-        public int getCode(){
+        public int getLength(){ //+X  <index><begin><block>
+            return 9;
+        }
+
+        public byte getID(){
             return 7;
         }
     },
     CANCEL {
-        public int getCode(){
+        public int getLength(){ //<index><begin><length>
+            return 13;
+        }
+
+        public byte getID(){
             return 8;
+        }
+    },
+    PORT {
+        public int getLength(){ //<listen-port>
+            return 3;
+        }
+
+        public byte getID(){
+            return 9;
         }
     }, INVALID;
 
-    public PeerMessage getFromCode(int code){
+    public PeerMessage getFromID(byte code){
         for(PeerMessage message : values()){
-            if(code == message.getCode()){
+            if(code == message.getID()){
                 return message;
             }
         }
@@ -68,7 +122,11 @@ public enum PeerMessage {
         return INVALID;
     }
 
-    public int getCode(){
+    public int getLength(){
+        return -1;
+    }
+
+    public byte getID(){
         return -1;
     }
 }
