@@ -3,7 +3,7 @@ package unet.jtorrent.announce;
 import unet.bencode.io.BencodeReader;
 import unet.bencode.variables.BencodeObject;
 import unet.jtorrent.TorrentClient;
-import unet.jtorrent.announce.inter.TrackerClient;
+import unet.jtorrent.announce.inter.Tracker;
 import unet.jtorrent.announce.inter.AnnounceEvent;
 import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.PeerUtils;
@@ -11,11 +11,11 @@ import unet.jtorrent.utils.PeerUtils;
 import java.io.IOException;
 import java.net.*;
 
-public class HTTPTrackerClient extends TrackerClient {
+public class HTTPTracker extends Tracker {
 
     private URI uri;
 
-    public HTTPTrackerClient(TorrentClient client, Torrent torrent, URI uri){
+    public HTTPTracker(TorrentClient client, Torrent torrent, URI uri){
         super(client, torrent);
         this.uri = uri;
     }

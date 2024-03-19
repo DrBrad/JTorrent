@@ -8,7 +8,7 @@ import unet.jtorrent.net.trackers.udp.messages.ConnectRequest;
 import unet.jtorrent.net.trackers.udp.messages.ConnectResponse;
 import unet.jtorrent.announce.inter.AnnounceEvent;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
-import unet.jtorrent.announce.inter.TrackerClient;
+import unet.jtorrent.announce.inter.Tracker;
 import unet.jtorrent.utils.Torrent;
 
 import java.io.IOException;
@@ -16,12 +16,12 @@ import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-public class UDPTrackerClient extends TrackerClient {
+public class UDPTracker extends Tracker {
     private InetAddress[] addresses;
     private long[] connectionIDs;
     private int port, key;
 
-    public UDPTrackerClient(TorrentClient client, Torrent torrent, URI uri)throws UnknownHostException, NoSuchAlgorithmException {
+    public UDPTracker(TorrentClient client, Torrent torrent, URI uri)throws UnknownHostException, NoSuchAlgorithmException {
         super(client, torrent);
 
         addresses = InetAddress.getAllByName(uri.getHost());

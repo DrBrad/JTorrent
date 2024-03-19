@@ -7,13 +7,13 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class TrackerClient {
+public abstract class Tracker {
 
     protected TorrentClient client;
     protected Torrent torrent;
     protected List<InetSocketAddress> peers;
 
-    public TrackerClient(TorrentClient client, Torrent torrent){
+    public Tracker(TorrentClient client, Torrent torrent){
         this.client = client;
         this.torrent = torrent;
         peers = new ArrayList<>();

@@ -1,14 +1,7 @@
-package unet.jtorrent.trackers;
+package unet.jtorrent.announce;
 
-import unet.kad4.routing.kb.KBucket;
-import unet.kad4.rpc.events.ResponseEvent;
-import unet.kad4.rpc.events.inter.ResponseCallback;
 import unet.kad4.utils.Node;
-import unet.kad4.utils.UID;
-import unet.jtorrent.kad.messages.GetPeersRequest;
-import unet.jtorrent.kad.messages.GetPeersResponse;
 
-import java.io.IOException;
 import java.util.List;
 
 public class DHTTracker {

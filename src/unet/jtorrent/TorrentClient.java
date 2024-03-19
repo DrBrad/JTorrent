@@ -1,10 +1,10 @@
 package unet.jtorrent;
 
-import unet.jtorrent.announce.HTTPTrackerClient;
+import unet.jtorrent.announce.HTTPTracker;
 import unet.jtorrent.net.trackers.udp.client.UDPTrackerSocket;
-import unet.jtorrent.announce.UDPTrackerClient;
+import unet.jtorrent.announce.UDPTracker;
 import unet.jtorrent.utils.Torrent;
-import unet.jtorrent.announce.inter.TrackerClient;
+import unet.jtorrent.announce.inter.Tracker;
 import unet.jtorrent.utils.inter.TrackerTypes;
 
 import java.io.File;
@@ -19,7 +19,7 @@ public class TorrentClient {
 
     private UDPTrackerSocket udpAnnounce;
     private List<Torrent> torrents;
-    private List<List<TrackerClient>> trackers;
+    private List<List<Tracker>> trackers;
     private int maxPeersPerRequest = -1;
 
     public TorrentClient(){
@@ -46,7 +46,7 @@ public class TorrentClient {
     }
 
     public void startTorrent(Torrent torrent){
-        List<TrackerClient> trackerList = new ArrayList<>();
+        List<Tracker> trackerList = new ArrayList<>();
         torrents.add(torrent);
         trackers.add(trackerList);
 
@@ -58,12 +58,12 @@ public class TorrentClient {
             try{
                 switch(TrackerTypes.getFromScheme(announce.getScheme())){
                     case UDP:
-                        trackerList.add(new UDPTrackerClient(this, torrent, announce));
+                        trackerList.add(new UDPTracker(this, torrent, announce));
                         break;
 
                     case HTTP:
                     case HTTPS:
-                        trackerList.add(new HTTPTrackerClient(this, torrent, announce));
+                        trackerList.add(new HTTPTracker(this, torrent, announce));
                         break;
                 }
             }catch(UnknownHostException | NoSuchAlgorithmException e){
@@ -71,7 +71,7 @@ public class TorrentClient {
             }
         }
 
-        for(TrackerClient tracker : trackerList){
+        for(Tracker tracker : trackerList){
             tracker.announce();
         }
 
@@ -97,12 +97,12 @@ public class TorrentClient {
     }
 
     public void requestMorePeers(int i){
-        for(TrackerClient tracker : trackers.get(i)){
+        for(Tracker tracker : trackers.get(i)){
             tracker.announce();
         }
     }
 
-    public List<TrackerClient> getPeers(int i){
+    public List<Tracker> getPeers(int i){
         return trackers.get(i);
     }
 
