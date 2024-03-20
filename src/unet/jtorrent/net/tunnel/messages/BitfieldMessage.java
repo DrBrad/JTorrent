@@ -18,7 +18,13 @@ public class BitfieldMessage extends MessageBase {
 
     @Override
     public byte[] encode(){
-        return new byte[0];
+        byte[] buf = super.encode();
+
+        for(int i = 0; i < pieces.length; i++){
+            buf[6+(i/8)] |= (1 << 7 - (i % 8)); // Set the bit to 1
+        }
+
+        return buf;
     }
 
     @Override
@@ -32,6 +38,11 @@ public class BitfieldMessage extends MessageBase {
                 }
             }
         }
+    }
+
+    @Override
+    public int getLength(){
+        return super.getLength()+((int) Math.ceil(pieces.length/8.0));
     }
 
     public void setPiece(int i, boolean piece){

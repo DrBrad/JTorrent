@@ -60,44 +60,61 @@ public class TCPSocket implements Runnable {
             }
 
 
+            //SEND BITFIELD... - IF NO PIECES DONT SEND...
+            BitfieldMessage bitfield = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //USE DOWNLOAD MANAGER FOR THIS...
+            //for(int i = 0; i < manager.getTorrent().getInfo().getTotalPieces(); i++){
+            //    message.setPiece();
+            //}
+
+            out.write(bitfield.encode());
+            out.flush();
+
+
             //READ ID CODE - WHAT THEY SENT
 
-            int length = (((in.read() & 0xff) << 24) |
-                    ((in.read() & 0xff) << 16) |
-                    ((in.read() & 0xff) << 8) |
-                    (in.read() & 0xff));
+            while(in.available() > 0){
+                int length = (((in.read() & 0xff) << 24) |
+                        ((in.read() & 0xff) << 16) |
+                        ((in.read() & 0xff) << 8) |
+                        (in.read() & 0xff));
 
-            if(length > 0){
-                byte id = (byte) in.read();
+                if(length > 0){
+                    byte id = (byte) in.read();
 
-                MessageType type = MessageType.getFromID(id);
+                    MessageType type = MessageType.getFromID(id);
 
-                //System.out.println(type+"   "+length+"  "+manager.getTorrent().getInfo().getTotalPieces());
+                    //System.out.println(type+"   "+length+"  "+manager.getTorrent().getInfo().getTotalPieces());
 
-                MessageBase message;
+                    MessageBase message;
 
-                switch(type){
-                    case CHOKE:
-                        return;
+                    switch(type){
+                        case CHOKE:
+                            return;
 
-                    case UNCHOKE:
-                        return;
+                        case UNCHOKE:
+                            return;
 
-                    case BITFIELD:
-                        message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces());
-                        break;
+                        case BITFIELD:
+                            if(length-1 != manager.getTorrent().getInfo().getTotalPieces()){
+                                throw new IOException("Bitfield is incorrect size");
+                            }
+                            message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //ONLY ALLOWED AFTER HANDSHAKE...
+                            break;
 
-                    default:
-                        return;
+                        default:
+                            return;
+                    }
+
+                    byte[] buf = new byte[length-1];
+                    in.read(buf);
+                    message.decode(buf);
+                    System.out.println(message);
+
+                    System.out.println(in.available());
+
+                }else{
+                    System.out.println("KEEP_ALIVE");
                 }
-
-                byte[] buf = new byte[length-1];
-                in.read(buf);
-                message.decode(buf);
-                System.out.println(message);
-
-            }else{
-                System.out.println("KEEP_ALIVE");
             }
 
             //KEEP ALIVE
