@@ -105,9 +105,12 @@ public class TCPSocket implements Runnable {
 
                 //TIMEOUT AFTER 5 SECONDS...
                 //DETERMINE WHERE THE PIECE SHOULD GO...
-                byte[] t = new byte[BLOCK_SIZE];
-                in.read(t);
-                System.out.println("AVAILABLE: "+t.length);
+                byte[] buf = new byte[BLOCK_SIZE];
+                int len;
+                while((len = in.read(buf)) != -1){
+                    //DETERMINE FILE... - (index*PIECE_LENGTH) - FILE INDEX STARTS 0+ THEN WE MAY NEED TO SPLIT BLOCK IF BETWEEN FILES
+                }
+                //System.out.println("AVAILABLE: "+t.length);
             }
 
             //READ ID CODE - WHAT THEY SENT
