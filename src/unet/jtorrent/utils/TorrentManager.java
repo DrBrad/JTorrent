@@ -10,7 +10,9 @@ import unet.jtorrent.net.tunnel.tcp.TCPSocket;
 import unet.jtorrent.utils.inter.TrackerTypes;
 
 import javax.sound.midi.Track;
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -26,14 +28,16 @@ public class TorrentManager implements ConnectionListener, PeerListener {
 
     private TorrentClient client;
     private Torrent torrent;
+    private File destination;
 
     private List<Tracker> trackers;
     private DownloadManager downloadManager;
     private ConcurrentLinkedQueue<Peer> peers, connected;
 
-    public TorrentManager(TorrentClient client, Torrent torrent){
+    public TorrentManager(TorrentClient client, Torrent torrent, File destination){
         this.client = client;
         this.torrent = torrent;
+        this.destination = new File(destination, torrent.getInfo().getName());
 
         downloadManager = new DownloadManager(torrent);
         trackers = new ArrayList<>();
@@ -42,6 +46,8 @@ public class TorrentManager implements ConnectionListener, PeerListener {
     }
 
     public void start(){
+        createFiles();
+
         if(downloadManager.getLeft() == 0){
             return;
         }
@@ -67,6 +73,27 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         for(Tracker tracker : trackers){
             tracker.addPeerListener(this);
             tracker.announce();
+        }
+    }
+
+    private void createFiles(){
+        for(TorrentFile f : torrent.getInfo().getFiles()){
+            StringBuilder path = new StringBuilder();
+            for(String p : f.getPath()){
+                path.append("/"+p);
+            }
+
+            try{
+                File file = new File(destination, path.toString());
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+
+                RandomAccessFile r = new RandomAccessFile(file, "rw");
+                r.setLength(f.getLength());
+
+            }catch(IOException e){
+                e.printStackTrace();
+            }
         }
     }
 

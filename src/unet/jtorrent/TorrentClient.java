@@ -34,12 +34,12 @@ public class TorrentClient {
         }
     }
 
-    public synchronized void startTorrent(File source/*, File dest*/){
-        startTorrent(new Torrent(source));
+    public synchronized void startTorrent(File source, File destination){
+        startTorrent(new Torrent(source), destination);
     }
 
-    public synchronized void startTorrent(Torrent torrent){
-        TorrentManager manager = new TorrentManager(this, torrent);
+    public synchronized void startTorrent(Torrent torrent, File destination){
+        TorrentManager manager = new TorrentManager(this, torrent, destination);
         manager.start();
         torrents.add(manager);
 

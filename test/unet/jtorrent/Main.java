@@ -35,6 +35,6 @@ public class Main {
         manager.setMaxPeersPerRequest(80);
         manager.start();
 
-        manager.startTorrent(new File("/home/brad/Downloads/torrent.torrent"));
+        manager.startTorrent(new File("/home/brad/Downloads/torrent.torrent"), new File("/home/brad/Downloads/test"));
     }
 }

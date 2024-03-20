@@ -31,6 +31,7 @@ public class DownloadManager {
                 switch(piece.getState()){
                     case STOPPED:
                     case WAITING:
+                        piece.setState(PieceState.DOWNLOADING);
                         return piece;
                 }
             }

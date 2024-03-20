@@ -25,6 +25,7 @@ public class TCPSocket implements Runnable {
 
     //public static final String BITTORRENT_PROTOCOL_IDENTIFIER = "BitTorrent protocol";
     public static final byte[] PROTOCOL_HEADER = new byte[]{ 'B', 'i', 't', 'T', 'o', 'r', 'r', 'e', 'n', 't', ' ', 'p', 'r', 'o', 't', 'o', 'c', 'o', 'l' };
+    public static final int BLOCK_SIZE = 4096;
     private TorrentManager manager;
     private Peer peer;
     private Socket socket;
@@ -92,16 +93,19 @@ public class TCPSocket implements Runnable {
 
             piece = manager.getDownloadManager().startPiece(pieces);
             if(pieces != null){
+                System.out.println("REQUESTING: "+piece.getIndex());
+
                 RequestMessage message = new RequestMessage();
                 message.setIndex(piece.getIndex());
                 message.setBegin(piece.getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
-                message.setLength(manager.getTorrent().getInfo().getPieceLength());
+                message.setLength(BLOCK_SIZE);
                 out.write(message.encode());
                 out.flush();
 
-                System.out.println("REQUESTING: "+piece.getIndex());
 
-                byte[] t = new byte[4096];
+                //TIMEOUT AFTER 5 SECONDS...
+                //DETERMINE WHERE THE PIECE SHOULD GO...
+                byte[] t = new byte[BLOCK_SIZE];
                 in.read(t);
                 System.out.println("AVAILABLE: "+t.length);
             }
@@ -205,10 +209,6 @@ public class TCPSocket implements Runnable {
         in.read(peerID);
 
         System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID)+"  "+manager.getTotalOpenConnections()+"  PEERS: "+manager.getTotalPotentialPeers());
-    }
-
-    public void bitField(){
-
     }
 
     private void receive()throws IOException {
