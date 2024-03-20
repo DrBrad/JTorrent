@@ -18,12 +18,16 @@ public class DownloadManager {
         completed = new boolean[torrent.getInfo().getTotalPieces()];
     }
 
-    public void setCompleted(int i){
+    public synchronized void setCompleted(int i){
         completed[i] = true;
         numCompleted++;
     }
 
-    public int getCompleted(){
+    public synchronized boolean isCompleted(int i){
+        return completed[i];
+    }
+
+    public synchronized int getTotalCompleted(){
         return numCompleted;
     }
 

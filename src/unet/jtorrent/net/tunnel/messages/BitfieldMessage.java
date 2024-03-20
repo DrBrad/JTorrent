@@ -57,6 +57,10 @@ public class BitfieldMessage extends MessageBase {
         return pieces.length;
     }
 
+    public void setPieces(boolean[] pieces){
+        this.pieces = pieces;
+    }
+
     public boolean[] getPieces(){
         return pieces;
     }

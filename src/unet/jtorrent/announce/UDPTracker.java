@@ -85,9 +85,9 @@ public class UDPTracker extends Tracker {
         request.setEvent(event);
         request.setInfoHash(manager.getTorrent().getInfo().getHash());
         request.setPeerID(manager.getClient().getPeerID()); //GRAB FROM CLIENT...
-        request.setDownloaded(manager.getDownloaded());
-        request.setLeft(manager.getLeft()); //MUST CALC THE AMMOUNT WE NEED...
-        request.setUploaded(manager.getUploaded());
+        request.setDownloaded(manager.getDownloadManager().getDownloaded());
+        request.setLeft(manager.getDownloadManager().getLeft()); //MUST CALC THE AMMOUNT WE NEED...
+        request.setUploaded(manager.getDownloadManager().getUploaded());
         request.setNumWant(manager.getClient().getMaxPeersPerRequest());
         request.setKey(key);
         request.setPort(manager.getClient().getTCPPort());

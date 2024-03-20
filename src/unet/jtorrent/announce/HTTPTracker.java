@@ -35,9 +35,9 @@ public class HTTPTracker extends Tracker {
                             uri.getScheme()+"://"+uri.getHost()+":"+uri.getPort()+"/announce",
                             encodeHexString(manager.getTorrent().getInfo().getHash()),
                             encodeHexString(manager.getClient().getPeerID()), //GRAB FROM CLIENT...
-                            manager.getDownloaded(),
-                            manager.getLeft(),
-                            manager.getUploaded(),
+                            manager.getDownloadManager().getDownloaded(),
+                            manager.getDownloadManager().getLeft(),
+                            manager.getDownloadManager().getUploaded(),
                             event.getName(),
                             manager.getClient().getMaxPeersPerRequest(),
                             manager.getClient().getTCPPort());

@@ -76,7 +76,7 @@ public class TCPSocket implements Runnable {
 
             //READ ID CODE - WHAT THEY SENT
 
-            while(in.available() > 0){
+            //while(in.available() > 0){
                 int length = (((in.read() & 0xff) << 24) |
                         ((in.read() & 0xff) << 16) |
                         ((in.read() & 0xff) << 8) |
@@ -99,7 +99,7 @@ public class TCPSocket implements Runnable {
                             return;
 
                         case BITFIELD:
-                            if(length-1 != manager.getTorrent().getInfo().getTotalPieces()){
+                            if(length-1 != (int) Math.ceil(manager.getTorrent().getInfo().getTotalPieces()/8.0)){
                                 throw new IOException("Bitfield is incorrect size");
                             }
                             message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //ONLY ALLOWED AFTER HANDSHAKE...
@@ -119,7 +119,7 @@ public class TCPSocket implements Runnable {
                 }else{
                     System.out.println("KEEP_ALIVE");
                 }
-            }
+            //}
 
             //KEEP ALIVE
 
@@ -218,9 +218,9 @@ public class TCPSocket implements Runnable {
     }
 
     public void close()throws IOException {
-        if(piece != null){
-            manager.getDownloadManager().failedPiece(piece);
-        }
+        //if(piece != null){
+        //    manager.getDownloadManager().failedPiece(piece);
+        //}
 
         if(!listeners.isEmpty()){
             for(ConnectionListener listener : listeners){
