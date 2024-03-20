@@ -2,6 +2,7 @@ package unet.jtorrent.net.tunnel.tcp;
 
 import unet.jtorrent.net.tunnel.inter.ConnectionListener;
 import unet.jtorrent.net.tunnel.messages.BitfieldMessage;
+import unet.jtorrent.net.tunnel.messages.InterestedMessage;
 import unet.jtorrent.net.tunnel.messages.KeepAliveMessage;
 import unet.jtorrent.net.tunnel.messages.RequestMessage;
 import unet.jtorrent.net.tunnel.messages.inter.MessageBase;
@@ -9,6 +10,7 @@ import unet.jtorrent.net.tunnel.messages.inter.MessageType;
 import unet.jtorrent.utils.Peer;
 import unet.jtorrent.utils.Piece;
 import unet.jtorrent.utils.TorrentManager;
+import unet.jtorrent.utils.inter.PieceState;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +32,8 @@ public class TCPSocket implements Runnable {
     private OutputStream out;
     private List<ConnectionListener> listeners;
     private byte[] peerID;
+    private boolean bitfield;
+    private boolean[] pieces;
     private Piece piece;
 
     public TCPSocket(TorrentManager manager, Peer peer){
@@ -60,65 +64,51 @@ public class TCPSocket implements Runnable {
             }
 
 
-            //SEND BITFIELD... - IF NO PIECES DONT SEND...
-            /*
-            BitfieldMessage bitfield = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //USE DOWNLOAD MANAGER FOR THIS...
-            boolean hasPiece = false;
-            for(Piece piece : manager.getTorrent().getInfo().getPieces()){
-                if(piece.)
-                bitfield.setPiece(piece.getIndex(), );
+            //SEND BIT-FIELD
+            if(manager.getDownloadManager().getTotalCompleted() > 0){
+                BitfieldMessage message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //USE DOWNLOAD MANAGER FOR THIS...
+                for(Piece piece : manager.getTorrent().getInfo().getPieces()){
+                    if(piece.getState() == PieceState.COMPLETE){
+                        message.setPiece(piece.getIndex(), true);
+                    }
+                }
+
+                out.write(message.encode());
+                out.flush();
             }
+
+            receive();
+
+            //KeepAliveMessage message = new KeepAliveMessage();
+            //out.write(message.encode());
+            //out.flush();
+            /*
             */
 
-            //out.write(bitfield.encode());
-            //out.flush();
+            out.write(new InterestedMessage().encode());
+            out.flush();
 
+            receive();
+
+            piece = manager.getDownloadManager().startPiece(pieces);
+            if(pieces != null){
+                RequestMessage message = new RequestMessage();
+                message.setIndex(piece.getIndex());
+                message.setBegin(piece.getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
+                message.setLength(manager.getTorrent().getInfo().getPieceLength());
+                out.write(message.encode());
+                out.flush();
+
+                System.out.println("REQUESTING: "+piece.getIndex());
+
+                byte[] t = new byte[4096];
+                in.read(t);
+                System.out.println("AVAILABLE: "+t.length);
+            }
 
             //READ ID CODE - WHAT THEY SENT
 
             //while(in.available() > 0){
-                int length = (((in.read() & 0xff) << 24) |
-                        ((in.read() & 0xff) << 16) |
-                        ((in.read() & 0xff) << 8) |
-                        (in.read() & 0xff));
-
-                if(length > 0){
-                    byte id = (byte) in.read();
-
-                    MessageType type = MessageType.getFromID(id);
-
-                    //System.out.println(type+"   "+length+"  "+manager.getTorrent().getInfo().getTotalPieces());
-
-                    MessageBase message;
-
-                    switch(type){
-                        case CHOKE:
-                            return;
-
-                        case UNCHOKE:
-                            return;
-
-                        case BITFIELD:
-                            if(length-1 != (int) Math.ceil(manager.getTorrent().getInfo().getTotalPieces()/8.0)){
-                                throw new IOException("Bitfield is incorrect size");
-                            }
-                            message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //ONLY ALLOWED AFTER HANDSHAKE...
-                            break;
-
-                        default:
-                            return;
-                    }
-
-                    byte[] buf = new byte[length-1];
-                    in.read(buf);
-                    message.decode(buf);
-                    System.out.println(message);
-
-                    System.out.println(in.available());
-
-                }else{
-                    System.out.println("KEEP_ALIVE");
-                }
             //}
 
             //KEEP ALIVE
@@ -164,7 +154,7 @@ public class TCPSocket implements Runnable {
         }
     }
 
-    public void handshake()throws IOException {
+    private void handshake()throws IOException {
         // Create the handshake message
         //byte[] reservedBytes = new byte[8]; // Reserved bytes are typically all zeros
         //byte[] message = new byte[68]; // Handshake message is 68 bytes in length
@@ -217,6 +207,87 @@ public class TCPSocket implements Runnable {
         System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID)+"  "+manager.getTotalOpenConnections()+"  PEERS: "+manager.getTotalPotentialPeers());
     }
 
+    public void bitField(){
+
+    }
+
+    private void receive()throws IOException {
+        int length = (((in.read() & 0xff) << 24) |
+                ((in.read() & 0xff) << 16) |
+                ((in.read() & 0xff) << 8) |
+                (in.read() & 0xff));
+
+        if(length > 0){
+            byte id = (byte) in.read();
+
+            MessageType type = MessageType.getFromID(id);
+
+            System.out.println(type+"   "+length+"  "+bitfield);
+
+            MessageBase message;
+
+            switch(type){
+                case CHOKE:
+                    return;
+
+                case UNCHOKE:
+                    return;
+
+                case INTERESTED:
+                    return;
+
+                case NOT_INTERESTED:
+                    return;
+
+                case HAVE:
+                    return;
+
+                case BITFIELD:
+                    if(bitfield){
+                        throw new IOException("Peer sent bitfield more than once.");
+                    }
+
+                    if(length-1 != (int) Math.ceil(manager.getTorrent().getInfo().getTotalPieces()/8.0)){
+                        throw new IOException("Bitfield is incorrect size");
+                    }
+
+                    message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //ONLY ALLOWED AFTER HANDSHAKE...
+                    byte[] buf = new byte[length-1];
+                    in.read(buf);
+                    message.decode(buf);
+                    pieces = ((BitfieldMessage) message).getPieces();
+                    bitfield = true;
+                    break;
+
+                case REQUEST:
+                    return;
+
+                case PIECE:
+                    return;
+
+                case CANCEL:
+                    return;
+
+                case PORT:
+                    return;
+
+                default:
+                    return;
+            }
+
+            System.out.println(message);
+
+        }else{
+            socket.setKeepAlive(true); //MAYBE MAYBE NOT FOR THIS...
+            System.out.println("KEEP_ALIVE  "+bitfield);
+        }
+
+        if(!bitfield){
+            pieces = new boolean[manager.getTorrent().getInfo().getTotalPieces()];
+            bitfield = true;
+        }
+    }
+
     public void close()throws IOException {
         //if(piece != null){
         //    manager.getDownloadManager().failedPiece(piece);
@@ -227,6 +298,8 @@ public class TCPSocket implements Runnable {
                 listener.onClosed(peer);
             }
         }
+
+        //System.err.println("CLOSE");
 
         if(!socket.isClosed()){
             if(!socket.isInputShutdown()){

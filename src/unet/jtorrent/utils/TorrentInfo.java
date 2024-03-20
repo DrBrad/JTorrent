@@ -55,6 +55,10 @@ public class TorrentInfo {
         return name;
     }
 
+    public Piece getPiece(int i){
+        return pieces.get(i);
+    }
+
     public int getPieceLength(){
         return pieceLength;
     }

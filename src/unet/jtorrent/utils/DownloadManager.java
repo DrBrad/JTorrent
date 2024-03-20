@@ -1,12 +1,14 @@
 package unet.jtorrent.utils;
 
+import unet.jtorrent.utils.inter.PieceState;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadManager {
 
     private Torrent torrent;
-    private boolean[] completed;
+    //private boolean[] completed;
     //private List<Piece> downloading, waiting;
     private int numCompleted;
     private long downloaded = 0, uploaded = 0;
@@ -15,16 +17,57 @@ public class DownloadManager {
         //waiting = new ArrayList<>();
         this.torrent = torrent;
         //downloading = new ArrayList<>();
-        completed = new boolean[torrent.getInfo().getTotalPieces()];
+        //completed = new boolean[torrent.getInfo().getTotalPieces()];
     }
 
+    public Piece startPiece(boolean[] available){
+        if(isComplete()){
+            throw new IllegalArgumentException("Torrent is complete.");
+        }
+
+        for(int i = 0; i < available.length; i++){
+            if(available[i]){
+                Piece piece = torrent.getInfo().getPiece(i);
+                switch(piece.getState()){
+                    case STOPPED:
+                    case WAITING:
+                        return piece;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public boolean isComplete(){
+        return (numCompleted == torrent.getInfo().getTotalPieces());
+    }
+
+    public void completedPiece(int i){
+        torrent.getInfo().getPiece(i).setState(PieceState.COMPLETE);
+        numCompleted++;
+    }
+
+    public void stopPiece(int i){
+        torrent.getInfo().getPiece(i).setState(PieceState.STOPPED);
+    }
+
+    public PieceState getState(int i){
+        return torrent.getInfo().getPiece(i).getState();
+    }
+
+    public int getTotalCompleted(){
+        return numCompleted;
+    }
+
+    /*
     public synchronized void setCompleted(int i){
-        completed[i] = true;
+        //completed[i] = true;
         numCompleted++;
     }
 
     public synchronized boolean isCompleted(int i){
-        return completed[i];
+        //return completed[i];
     }
 
     public synchronized int getTotalCompleted(){
@@ -55,7 +98,7 @@ public class DownloadManager {
     }
     */
 
-    public synchronized void verify(){
+    public void verify(){
         //VERIFY ALL OF THE PIECES...
     }
 

@@ -1,11 +1,14 @@
 package unet.jtorrent.utils;
 
+import unet.jtorrent.utils.inter.PieceState;
+
 public class Piece {
 
     public static final int PIECE_LENGTH = 20;
 
     private int i, offset;
     private byte[] hash;
+    private PieceState state = PieceState.WAITING;
 
     public Piece(byte[] hash, int i){
         if(hash.length != PIECE_LENGTH){
@@ -32,5 +35,13 @@ public class Piece {
 
     public int getOffset(){
         return offset;
+    }
+
+    public void setState(PieceState state){
+        this.state = state;
+    }
+
+    public PieceState getState(){
+        return state;
     }
 }
