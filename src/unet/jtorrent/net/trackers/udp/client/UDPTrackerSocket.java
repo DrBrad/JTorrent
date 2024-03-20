@@ -25,7 +25,6 @@ public class UDPTrackerSocket {
     //TRANSACTION_ID
 
     //private InetSocketAddress address;
-    private final ConcurrentLinkedQueue<DatagramPacket> receivePool;
     private SecureRandom random;
     private ResponseTracker tracker;
     private DatagramSocket socket;
@@ -33,7 +32,6 @@ public class UDPTrackerSocket {
     public UDPTrackerSocket(){
         //URI uri = new URI(link);
         //address = new InetSocketAddress(InetAddress.getByName(uri.getHost()), uri.getPort());
-        receivePool = new ConcurrentLinkedQueue<>();
         tracker = new ResponseTracker(this);
 
         try{
@@ -65,14 +63,13 @@ public class UDPTrackerSocket {
                         socket.receive(packet);
 
                         if(packet != null){
-                            receivePool.offer(packet);
                             new Thread(new Runnable(){
                                 @Override
                                 public void run(){
                                     onReceive(packet);
                                     tracker.removeStalled();
                                 }
-                            });
+                            }).start();
                         }
                     }catch(IOException e){
                         e.printStackTrace();

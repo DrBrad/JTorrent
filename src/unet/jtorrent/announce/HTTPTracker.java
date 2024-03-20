@@ -6,6 +6,7 @@ import unet.jtorrent.TorrentClient;
 import unet.jtorrent.announce.inter.PeerListener;
 import unet.jtorrent.announce.inter.Tracker;
 import unet.jtorrent.announce.inter.AnnounceEvent;
+import unet.jtorrent.utils.Peer;
 import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.PeerUtils;
 import unet.jtorrent.utils.TorrentManager;
@@ -63,13 +64,13 @@ public class HTTPTracker extends Tracker {
                     }
                     */
 
-                    List<InetSocketAddress> peersList = new ArrayList<>();
+                    List<Peer> peersList = new ArrayList<>();
                     addr = new byte[6];
 
                     int position = 0;
                     while(position < ben.getBytes("peers").length){
                         System.arraycopy(ben.getBytes("peers"), position, addr, 0, addr.length);
-                        peersList.add(PeerUtils.unpackAddress(addr));
+                        peersList.add(new Peer(PeerUtils.unpackAddress(addr)));
                         position += addr.length;
                     }
 

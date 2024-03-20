@@ -10,6 +10,7 @@ import unet.jtorrent.net.trackers.udp.messages.ConnectResponse;
 import unet.jtorrent.announce.inter.AnnounceEvent;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
 import unet.jtorrent.announce.inter.Tracker;
+import unet.jtorrent.utils.Peer;
 import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.TorrentManager;
 
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UDPTracker extends Tracker {
     private InetAddress[] addresses;
@@ -98,9 +101,14 @@ public class UDPTracker extends Tracker {
                     peers += response.getTotalPeers();
                     System.out.println("UDP: "+response.getOrigin().getAddress().getHostAddress()+":"+response.getOrigin().getPort()+" GOT PEERS: "+peers);
 
+                    List<Peer> peers = new ArrayList<>();
+                    for(InetSocketAddress address : response.getAllPeers()){
+                        peers.add(new Peer(address));
+                    }
+
                     if(!listeners.isEmpty()){
                         for(PeerListener listener : listeners){
-                            listener.onPeersReceived(response.getAllPeers());
+                            listener.onPeersReceived(peers);
                         }
                     }
 

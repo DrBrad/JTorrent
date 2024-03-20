@@ -4,6 +4,7 @@ import unet.jtorrent.net.tunnel.inter.ConnectionListener;
 import unet.jtorrent.net.tunnel.messages.KeepAliveMessage;
 import unet.jtorrent.net.tunnel.messages.RequestMessage;
 import unet.jtorrent.net.tunnel.messages.inter.MessageType;
+import unet.jtorrent.utils.Peer;
 import unet.jtorrent.utils.Piece;
 import unet.jtorrent.utils.TorrentManager;
 
@@ -21,7 +22,7 @@ public class TCPSocket implements Runnable {
     //public static final String BITTORRENT_PROTOCOL_IDENTIFIER = "BitTorrent protocol";
     public static final byte[] PROTOCOL_HEADER = new byte[]{ 'B', 'i', 't', 'T', 'o', 'r', 'r', 'e', 'n', 't', ' ', 'p', 'r', 'o', 't', 'o', 'c', 'o', 'l' };
     private TorrentManager manager;
-    private InetSocketAddress address;
+    private Peer peer;
     private Socket socket;
     private InputStream in;
     private OutputStream out;
@@ -29,9 +30,9 @@ public class TCPSocket implements Runnable {
     private byte[] peerID;
     private Piece piece;
 
-    public TCPSocket(TorrentManager manager, InetSocketAddress address){
+    public TCPSocket(TorrentManager manager, Peer peer){
         this.manager = manager;
-        this.address = address;
+        this.peer = peer;
         listeners = new ArrayList<>();
     }
 
@@ -39,7 +40,7 @@ public class TCPSocket implements Runnable {
     public void run(){
         try{
             socket = new Socket();
-            socket.connect(address);
+            socket.connect(peer.getAddress());
             if(!socket.isConnected()){
                 close();
                 return;
@@ -52,10 +53,12 @@ public class TCPSocket implements Runnable {
 
             if(!listeners.isEmpty()){
                 for(ConnectionListener listener : listeners){
-                    listener.onConnected(address);
+                    listener.onConnected(peer);
                 }
             }
 
+
+            /*
             socket.setKeepAlive(true);
             out.write(new KeepAliveMessage().encode());
 
@@ -81,9 +84,10 @@ public class TCPSocket implements Runnable {
             System.out.println(new String(buf));
 
             manager.getDownloadManager().completedPiece(piece);
+            */
 
         }catch(IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
 
         }finally{
             try{
@@ -153,7 +157,7 @@ public class TCPSocket implements Runnable {
 
         if(!listeners.isEmpty()){
             for(ConnectionListener listener : listeners){
-                listener.onClosed(address);
+                listener.onClosed(peer);
             }
         }
 

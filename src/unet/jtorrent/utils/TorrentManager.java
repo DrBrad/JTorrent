@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static unet.jtorrent.TorrentClient.MAX_OPEN_CONNECTIONS;
+import static unet.jtorrent.TorrentClient.MAX_RETRY_COUNT;
 
 public class TorrentManager implements ConnectionListener, PeerListener {
 
@@ -27,7 +28,7 @@ public class TorrentManager implements ConnectionListener, PeerListener {
 
     private List<Tracker> trackers;
     private DownloadManager downloadManager;
-    private List<InetSocketAddress> peers, connected;
+    private List<Peer> peers, connected;
     private long downloaded = 0, uploaded = 0;
 
     public TorrentManager(TorrentClient client, Torrent torrent){
@@ -70,17 +71,17 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         }
     }
 
-    private void openConnection(InetSocketAddress address){
+    private void openConnection(Peer peer){
         if(connected.size() >= MAX_OPEN_CONNECTIONS){
             return;
         }
 
-        peers.remove(address);
+        peers.remove(peer);
         if(getLeft() == 0){
             return;
         }
 
-        TCPSocket socket = new TCPSocket(this, address);
+        TCPSocket socket = new TCPSocket(this, peer);
         socket.addConnectionListener(this);
 
         new Thread(socket).start();
@@ -135,31 +136,38 @@ public class TorrentManager implements ConnectionListener, PeerListener {
     }
 
     @Override
-    public void onPeersReceived(List<InetSocketAddress> peers){
+    public void onPeersReceived(List<Peer> peers){
         this.peers.addAll(peers);
         System.out.println("RECEIVED PEERS: "+this.peers.size());
 
-        for(InetSocketAddress address : peers){
-            openConnection(address);
+        for(Peer peer : peers){
+            openConnection(peer);
         }
     }
 
     @Override
-    public void onConnected(InetSocketAddress address){
-        connected.add(address);
+    public void onConnected(Peer peer){
+        connected.add(peer);
     }
 
     @Override
-    public void onClosed(InetSocketAddress address){
-        connected.remove(address);
+    public void onClosed(Peer peer){
+        peer.markStale();
+        connected.remove(peer);
 
-        if(peers.isEmpty()){
-            for(Tracker tracker : trackers){
-                tracker.scrape();
+        if(peer.getStale() >= MAX_RETRY_COUNT){
+            if(peers.isEmpty()){
+                for(Tracker tracker : trackers){
+                    tracker.scrape();
+                }
+
+            }else{
+                openConnection(peers.get(0));
             }
 
-        }else{
-            openConnection(peers.get(0));
+            return;
         }
+
+        openConnection(peer);
     }
 }

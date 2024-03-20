@@ -1,10 +1,10 @@
 package unet.jtorrent.net.tunnel.inter;
 
-import java.net.InetSocketAddress;
+import unet.jtorrent.utils.Peer;
 
 public interface ConnectionListener {
 
-    void onConnected(InetSocketAddress address);
+    void onConnected(Peer peer);
 
-    void onClosed(InetSocketAddress address);
+    void onClosed(Peer peer);
 }

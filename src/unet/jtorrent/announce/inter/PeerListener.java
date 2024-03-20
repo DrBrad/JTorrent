@@ -1,9 +1,10 @@
 package unet.jtorrent.announce.inter;
 
-import java.net.InetSocketAddress;
+import unet.jtorrent.utils.Peer;
+
 import java.util.List;
 
 public interface PeerListener {
 
-    void onPeersReceived(List<InetSocketAddress> peers);
+    void onPeersReceived(List<Peer> peers);
 }
