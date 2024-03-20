@@ -41,7 +41,7 @@ public class TorrentInfo {
             files = new ArrayList<>();
 
             for(int i = 0; i < ben.getBencodeArray("files").size(); i++){
-                TorrentFile file = new TorrentFile(ben.getBencodeArray("files").getBencodeObject(i));
+                TorrentFile file = new TorrentFile(ben.getBencodeArray("files").getBencodeObject(i), i);
                 files.add(file);
                 length += file.getLength();
             }
@@ -69,6 +69,10 @@ public class TorrentInfo {
 
     public int getTotalPieces(){
         return pieces.size();
+    }
+
+    public TorrentFile getFile(int i){
+        return files.get(i);
     }
 
     public List<TorrentFile> getFiles(){

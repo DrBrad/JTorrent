@@ -28,7 +28,6 @@ public class TorrentManager implements ConnectionListener, PeerListener {
 
     private TorrentClient client;
     private Torrent torrent;
-    private File destination;
 
     private List<Tracker> trackers;
     private DownloadManager downloadManager;
@@ -37,16 +36,15 @@ public class TorrentManager implements ConnectionListener, PeerListener {
     public TorrentManager(TorrentClient client, Torrent torrent, File destination){
         this.client = client;
         this.torrent = torrent;
-        this.destination = new File(destination, torrent.getInfo().getName());
 
-        downloadManager = new DownloadManager(torrent);
+        downloadManager = new DownloadManager(torrent, destination);
         trackers = new ArrayList<>();
         peers = new ConcurrentLinkedQueue<>();
         connected = new ConcurrentLinkedQueue<>();
     }
 
     public void start(){
-        createFiles();
+        downloadManager.createFiles();
 
         if(downloadManager.getLeft() == 0){
             return;
@@ -73,30 +71,6 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         for(Tracker tracker : trackers){
             tracker.addPeerListener(this);
             tracker.announce();
-        }
-    }
-
-    private void createFiles(){
-        for(TorrentFile f : torrent.getInfo().getFiles()){
-            StringBuilder path = new StringBuilder();
-            for(String p : f.getPath()){
-                path.append("/"+p);
-            }
-
-            File file = new File(destination, path.toString());
-            file.getParentFile().mkdirs();
-
-            if(!file.exists()){
-                try{
-                    file.createNewFile();
-
-                    RandomAccessFile r = new RandomAccessFile(file, "rw");
-                    r.setLength(f.getLength());
-
-                }catch(IOException e){
-                    e.printStackTrace();
-                }
-            }
         }
     }
 

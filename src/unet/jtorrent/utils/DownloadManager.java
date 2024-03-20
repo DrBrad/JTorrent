@@ -2,22 +2,51 @@ package unet.jtorrent.utils;
 
 import unet.jtorrent.utils.inter.PieceState;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadManager {
 
     private Torrent torrent;
+    private File destination;
     //private boolean[] completed;
     //private List<Piece> downloading, waiting;
     private int numCompleted;
     private long downloaded = 0, uploaded = 0;
 
-    public DownloadManager(Torrent torrent){
+    public DownloadManager(Torrent torrent, File destination){
         //waiting = new ArrayList<>();
         this.torrent = torrent;
+        this.destination = new File(destination, torrent.getInfo().getName());
         //downloading = new ArrayList<>();
         //completed = new boolean[torrent.getInfo().getTotalPieces()];
+    }
+
+    public void createFiles(){
+        for(TorrentFile f : torrent.getInfo().getFiles()){
+            StringBuilder path = new StringBuilder();
+            for(String p : f.getPath()){
+                path.append("/"+p);
+            }
+
+            File file = new File(destination, path.toString());
+            file.getParentFile().mkdirs();
+
+            if(!file.exists()){
+                try{
+                    file.createNewFile();
+
+                    RandomAccessFile r = new RandomAccessFile(file, "rw");
+                    r.setLength(f.getLength());
+
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public Piece startPiece(boolean[] available){
@@ -59,6 +88,29 @@ public class DownloadManager {
 
     public int getTotalCompleted(){
         return numCompleted;
+    }
+
+    public File getDestination(){
+        return destination;
+    }
+
+    /*
+    public File getFileOffset(int off){
+        int current = 0;
+        TorrentFile p = torrent.getInfo().getFile(0);
+        for(TorrentFile f : torrent.getInfo().getFiles()){
+            if(off < current+f.getLength()){
+                break;
+            }
+            p = f;
+        }
+
+        StringBuilder path = new StringBuilder();
+        for(String g : p.getPath()){
+            path.append("/"+g);
+        }
+
+        return new File(destination, path.toString());
     }
 
     /*

@@ -7,14 +7,10 @@ import unet.jtorrent.net.tunnel.messages.KeepAliveMessage;
 import unet.jtorrent.net.tunnel.messages.RequestMessage;
 import unet.jtorrent.net.tunnel.messages.inter.MessageBase;
 import unet.jtorrent.net.tunnel.messages.inter.MessageType;
-import unet.jtorrent.utils.Peer;
-import unet.jtorrent.utils.Piece;
-import unet.jtorrent.utils.TorrentManager;
+import unet.jtorrent.utils.*;
 import unet.jtorrent.utils.inter.PieceState;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -105,11 +101,46 @@ public class TCPSocket implements Runnable {
 
                 //TIMEOUT AFTER 5 SECONDS...
                 //DETERMINE WHERE THE PIECE SHOULD GO...
-                byte[] buf = new byte[BLOCK_SIZE];
-                int len;
+
+
+                TorrentFile torrentFile = null;
+                long offset = 0;
+                for(TorrentFile f : manager.getTorrent().getInfo().getFiles()){
+                    if((long) piece.getIndex()*manager.getTorrent().getInfo().getPieceLength() < offset+f.getLength()){
+                        torrentFile = f;
+                        break;
+                    }
+                    offset += f.getLength();
+                }
+
+                RandomAccessFile file = new RandomAccessFile(new File(manager.getDownloadManager().getDestination(), torrentFile.getPathString()), "rw");
+                long pos = (int) ((piece.getIndex()*manager.getTorrent().getInfo().getPieceLength())-offset);
+                file.seek(pos);
+
+                byte[] buf = new byte[BLOCK_SIZE]; //
+                //TorrentFile torrentFile = manager.getTorrent().getInfo().getFileFromPiece(piece.getIndex());
+                int len, read = 0;
+                //while(read < manager.getTorrent().getInfo().getPieceLength()){
+                //    len = in.read(buf);
                 while((len = in.read(buf)) != -1){
+                    if(pos+len > torrentFile.getLength()){
+                        file.write(buf, 0, (int) (torrentFile.getLength()-pos));
+                        //WRITE THE LAST BYTES
+                        torrentFile = manager.getTorrent().getInfo().getFile(torrentFile.getIndex()+1);
+                        pos = len-(torrentFile.getLength()-pos);
+                        file = new RandomAccessFile(new File(manager.getDownloadManager().getDestination(), torrentFile.getPathString()), "rw");
+                        file.write(buf, 0, (int) pos);
+                    }
+
+                    out.write(buf);
+                    pos += len;
+
+                    read += len;
+                    System.out.println("WRITING: "+len+"  - "+piece.getIndex());
                     //DETERMINE FILE... - (index*PIECE_LENGTH) - FILE INDEX STARTS 0+ THEN WE MAY NEED TO SPLIT BLOCK IF BETWEEN FILES
                 }
+
+                System.err.println("COMPLETED  "+read);
                 //System.out.println("AVAILABLE: "+t.length);
             }
 
