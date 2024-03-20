@@ -147,7 +147,7 @@ public class TCPSocket implements Runnable {
         peerID = new byte[20];
         in.read(peerID);
 
-        System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID));
+        System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID)+"  "+manager.getTotalOpenConnections()+"  PEERS: "+manager.getTotalPotentialPeers());
     }
 
     public void close()throws IOException {

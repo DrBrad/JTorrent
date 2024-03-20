@@ -138,7 +138,7 @@ public class TorrentManager implements ConnectionListener, PeerListener {
     @Override
     public void onPeersReceived(List<Peer> peers){
         this.peers.addAll(peers);
-        System.out.println("RECEIVED PEERS: "+this.peers.size());
+        System.out.println("RECEIVED PEERS: "+this.peers.size()+"  "+peers.size());
 
         for(Peer peer : peers){
             openConnection(peer);
@@ -153,7 +153,7 @@ public class TorrentManager implements ConnectionListener, PeerListener {
     @Override
     public void onClosed(Peer peer){
         peer.markStale();
-        connected.remove(peer);
+        connected.remove(peer); //NOT NEEDED...
 
         if(peer.getStale() >= MAX_RETRY_COUNT){
             if(peers.isEmpty()){
