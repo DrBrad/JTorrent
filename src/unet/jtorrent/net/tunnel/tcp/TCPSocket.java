@@ -1,8 +1,10 @@
 package unet.jtorrent.net.tunnel.tcp;
 
 import unet.jtorrent.net.tunnel.inter.ConnectionListener;
+import unet.jtorrent.net.tunnel.messages.BitfieldMessage;
 import unet.jtorrent.net.tunnel.messages.KeepAliveMessage;
 import unet.jtorrent.net.tunnel.messages.RequestMessage;
+import unet.jtorrent.net.tunnel.messages.inter.MessageBase;
 import unet.jtorrent.net.tunnel.messages.inter.MessageType;
 import unet.jtorrent.utils.Peer;
 import unet.jtorrent.utils.Piece;
@@ -70,11 +72,32 @@ public class TCPSocket implements Runnable {
 
                 MessageType type = MessageType.getFromID(id);
 
+                //System.out.println(type+"   "+length+"  "+manager.getTorrent().getInfo().getTotalPieces());
+
+                MessageBase message;
+
                 switch(type){
                     case CHOKE:
+                        return;
 
+                    case UNCHOKE:
+                        return;
+
+                    case BITFIELD:
+                        message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces());
                         break;
+
+                    default:
+                        return;
                 }
+
+                byte[] buf = new byte[length-1];
+                in.read(buf);
+                message.decode(buf);
+                System.out.println(message);
+
+            }else{
+                System.out.println("KEEP_ALIVE");
             }
 
             //KEEP ALIVE

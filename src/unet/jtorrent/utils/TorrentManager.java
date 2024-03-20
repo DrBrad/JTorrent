@@ -150,7 +150,6 @@ public class TorrentManager implements ConnectionListener, PeerListener {
 
     @Override
     public void onConnected(Peer peer){
-        System.out.println("CONNECTED: "+connected.size());
     }
 
     @Override
