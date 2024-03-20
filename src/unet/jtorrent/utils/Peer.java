@@ -35,4 +35,18 @@ public class Peer {
     public void setSeen(){
         stale = 0;
     }
+
+    @Override
+    public int hashCode(){
+        return address.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof Peer){
+            return hashCode() == o.hashCode();
+            //return address.equals(((Node) o).address) && port == ((Node) o).port;
+        }
+        return false;
+    }
 }

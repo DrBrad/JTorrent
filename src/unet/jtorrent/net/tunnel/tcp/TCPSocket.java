@@ -51,6 +51,8 @@ public class TCPSocket implements Runnable {
 
             handshake();
 
+            System.out.println("CONNECTED!!!!!!!!!!!!!!!!!!!");
+
             if(!listeners.isEmpty()){
                 for(ConnectionListener listener : listeners){
                     listener.onConnected(peer);
@@ -151,6 +153,7 @@ public class TCPSocket implements Runnable {
     }
 
     public void close()throws IOException {
+        System.err.println("CLOSE");
         if(piece != null){
             manager.getDownloadManager().failedPiece(piece);
         }

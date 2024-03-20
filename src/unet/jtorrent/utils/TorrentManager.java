@@ -17,6 +17,7 @@ import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static unet.jtorrent.TorrentClient.MAX_OPEN_CONNECTIONS;
 import static unet.jtorrent.TorrentClient.MAX_RETRY_COUNT;
@@ -28,7 +29,7 @@ public class TorrentManager implements ConnectionListener, PeerListener {
 
     private List<Tracker> trackers;
     private DownloadManager downloadManager;
-    private List<Peer> peers, connected;
+    private ConcurrentLinkedQueue<Peer> peers, connected;
     private long downloaded = 0, uploaded = 0;
 
     public TorrentManager(TorrentClient client, Torrent torrent){
@@ -37,8 +38,8 @@ public class TorrentManager implements ConnectionListener, PeerListener {
 
         downloadManager = new DownloadManager(torrent.getInfo().getPieces());
         trackers = new ArrayList<>();
-        peers = new ArrayList<>();
-        connected = new ArrayList<>();
+        peers = new ConcurrentLinkedQueue<>();
+        connected = new ConcurrentLinkedQueue<>();
     }
 
     public void start(){
@@ -71,15 +72,17 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         }
     }
 
-    private void openConnection(Peer peer){
+    private void openConnection(){
         if(connected.size() >= MAX_OPEN_CONNECTIONS){
             return;
         }
 
-        peers.remove(peer);
         if(getLeft() == 0){
             return;
         }
+
+        Peer peer = peers.poll();
+        connected.offer(peer);
 
         TCPSocket socket = new TCPSocket(this, peer);
         socket.addConnectionListener(this);
@@ -138,36 +141,48 @@ public class TorrentManager implements ConnectionListener, PeerListener {
     @Override
     public void onPeersReceived(List<Peer> peers){
         this.peers.addAll(peers);
-        System.out.println("RECEIVED PEERS: "+this.peers.size()+"  "+peers.size());
+        System.out.println("RECEIVED PEERS: "+getTotalPotentialPeers()+"  "+getTotalOpenConnections());
 
-        for(Peer peer : peers){
-            openConnection(peer);
+        for(int i = connected.size(); i < MAX_OPEN_CONNECTIONS; i++){
+            openConnection();
         }
     }
 
     @Override
     public void onConnected(Peer peer){
-        connected.add(peer);
+        System.out.println("CONNECTED: "+connected.size());
     }
 
     @Override
     public void onClosed(Peer peer){
+        /*
         peer.markStale();
-        connected.remove(peer); //NOT NEEDED...
 
         if(peer.getStale() >= MAX_RETRY_COUNT){
+            connected.remove(peer); //NOT NEEDED...
+
             if(peers.isEmpty()){
                 for(Tracker tracker : trackers){
                     tracker.scrape();
                 }
 
+                //USE PEERS OBTAINED...
+
             }else{
+                System.err.println("EXHAUSTED USING ALTERNATIVE PEER");
                 openConnection(peers.get(0));
             }
 
             return;
         }
 
+        System.err.println("RETRYING");
         openConnection(peer);
+        */
+        int t = connected.size();
+        connected.remove(peer); //NOT NEEDED...
+
+        System.err.println("EXHAUSTED USING ALTERNATIVE PEER  "+t+"  "+connected.size());
+        openConnection();
     }
 }
