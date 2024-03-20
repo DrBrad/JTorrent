@@ -70,7 +70,7 @@ public class HTTPTracker extends Tracker {
                     int position = 0;
                     while(position < ben.getBytes("peers").length){
                         System.arraycopy(ben.getBytes("peers"), position, addr, 0, addr.length);
-                        peersList.add(new Peer(PeerUtils.unpackAddress(addr)));
+                        peersList.add(PeerUtils.unpackAddress(addr));
                         position += addr.length;
                     }
 

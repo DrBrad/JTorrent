@@ -4,6 +4,8 @@ import java.io.File;
 
 public class Main {
 
+    //WORK ON STALE MANAGER FOR CLIENT CONNECTION...
+
     public static void main(String[] args)throws Exception {
         /*
         Kademlia kad = new Kademlia();

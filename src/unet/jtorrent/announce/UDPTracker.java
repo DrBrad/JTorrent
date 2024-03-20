@@ -101,14 +101,9 @@ public class UDPTracker extends Tracker {
                     peers += response.getTotalPeers();
                     System.out.println("UDP: "+response.getOrigin().getAddress().getHostAddress()+":"+response.getOrigin().getPort()+" GOT PEERS: "+peers);
 
-                    List<Peer> peers = new ArrayList<>();
-                    for(InetSocketAddress address : response.getAllPeers()){
-                        peers.add(new Peer(address));
-                    }
-
                     if(!listeners.isEmpty()){
                         for(PeerListener listener : listeners){
-                            listener.onPeersReceived(peers);
+                            listener.onPeersReceived(response.getAllPeers());
                         }
                     }
 

@@ -40,7 +40,7 @@ public class TCPSocket implements Runnable {
     public void run(){
         try{
             socket = new Socket();
-            socket.connect(peer.getAddress());
+            socket.connect(peer.getAddress(), 5000);
             if(!socket.isConnected()){
                 close();
                 return;
@@ -51,14 +51,25 @@ public class TCPSocket implements Runnable {
 
             handshake();
 
-            System.out.println("CONNECTED!!!!!!!!!!!!!!!!!!!");
-
             if(!listeners.isEmpty()){
                 for(ConnectionListener listener : listeners){
                     listener.onConnected(peer);
                 }
             }
 
+
+            //READ ID CODE - WHAT THEY SENT
+
+            int length = (((in.read() & 0xff) << 24) |
+                    ((in.read() & 0xff) << 16) |
+                    ((in.read() & 0xff) << 8) |
+                    (in.read() & 0xff));
+
+            if(length > 0){
+            }
+
+
+            byte id = (byte) in.read();
 
             /*
             socket.setKeepAlive(true);
@@ -153,7 +164,6 @@ public class TCPSocket implements Runnable {
     }
 
     public void close()throws IOException {
-        System.err.println("CLOSE");
         if(piece != null){
             manager.getDownloadManager().failedPiece(piece);
         }

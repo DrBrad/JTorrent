@@ -6,7 +6,7 @@ import java.net.UnknownHostException;
 
 public class PeerUtils {
 
-    public static InetSocketAddress unpackAddress(byte[] buf){
+    public static Peer unpackAddress(byte[] buf){
         try{
             if(buf.length == 6){
                 InetAddress address = InetAddress.getByAddress(new byte[]{
@@ -17,7 +17,7 @@ public class PeerUtils {
                 });
 
                 //System.out.println(address.getHostAddress());
-                return new InetSocketAddress(address, (buf[4] & 0xff) << 8 | (buf[5] & 0xff));
+                return new Peer(address, (buf[4] & 0xff) << 8 | (buf[5] & 0xff));
                 //return new InetSocketAddress(address, ((buf[4] << 8) | buf[5] & 0xff));
 
             }else if(buf.length == 18){
@@ -44,7 +44,7 @@ public class PeerUtils {
                 });
 
                 //return new InetSocketAddress(address, ((buf[16] << 8) | buf[17] & 0xff));
-                return new InetSocketAddress(address, (buf[16] & 0xff) << 8 | (buf[17] & 0xff));
+                return new Peer(address, (buf[16] & 0xff) << 8 | (buf[17] & 0xff));
             }
         }catch(UnknownHostException e){
             e.printStackTrace();

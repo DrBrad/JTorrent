@@ -12,6 +12,10 @@ public class Peer {
         this.address = address;
     }
 
+    public Peer(InetAddress address, int port){
+        this.address = new InetSocketAddress(address, port);
+    }
+
     public InetSocketAddress getAddress(){
         return address;
     }

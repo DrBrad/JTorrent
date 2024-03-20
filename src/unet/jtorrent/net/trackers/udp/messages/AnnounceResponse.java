@@ -2,6 +2,7 @@ package unet.jtorrent.net.trackers.udp.messages;
 
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageAction;
 import unet.jtorrent.net.trackers.udp.messages.inter.MessageBase;
+import unet.jtorrent.utils.Peer;
 import unet.jtorrent.utils.PeerUtils;
 
 import java.net.*;
@@ -23,7 +24,7 @@ public class AnnounceResponse extends MessageBase {
     * */
 
     private int interval, leechers, seeders;
-    private List<InetSocketAddress> peers;
+    private List<Peer> peers;
 
     public AnnounceResponse(byte[] tid){
         super(tid);
@@ -93,19 +94,19 @@ public class AnnounceResponse extends MessageBase {
         return seeders;
     }
 
-    public boolean containsPeer(InetSocketAddress address){
-        return peers.contains(address);
+    public boolean containsPeer(Peer peer){
+        return peers.contains(peer);
     }
 
-    public void addPeer(InetSocketAddress address){
-        peers.add(address);
+    public void addPeer(Peer peer){
+        peers.add(peer);
     }
 
-    public void removePeer(InetSocketAddress address){
-        peers.remove(address);
+    public void removePeer(Peer peer){
+        peers.remove(peer);
     }
 
-    public List<InetSocketAddress> getAllPeers(){
+    public List<Peer> getAllPeers(){
         return peers;
     }
 

@@ -179,10 +179,10 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         System.err.println("RETRYING");
         openConnection(peer);
         */
-        int t = connected.size();
         connected.remove(peer); //NOT NEEDED...
 
-        System.err.println("EXHAUSTED USING ALTERNATIVE PEER  "+t+"  "+connected.size());
-        openConnection();
+        if(!peers.isEmpty()){
+            openConnection();
+        }
     }
 }
