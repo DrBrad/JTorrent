@@ -61,13 +61,17 @@ public class TCPSocket implements Runnable {
 
 
             //SEND BITFIELD... - IF NO PIECES DONT SEND...
+            /*
             BitfieldMessage bitfield = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //USE DOWNLOAD MANAGER FOR THIS...
-            //for(int i = 0; i < manager.getTorrent().getInfo().getTotalPieces(); i++){
-            //    message.setPiece();
-            //}
+            boolean hasPiece = false;
+            for(Piece piece : manager.getTorrent().getInfo().getPieces()){
+                if(piece.)
+                bitfield.setPiece(piece.getIndex(), );
+            }
+            */
 
-            out.write(bitfield.encode());
-            out.flush();
+            //out.write(bitfield.encode());
+            //out.flush();
 
 
             //READ ID CODE - WHAT THEY SENT
