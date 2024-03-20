@@ -30,20 +30,19 @@ public class TorrentManager implements ConnectionListener, PeerListener {
     private List<Tracker> trackers;
     private DownloadManager downloadManager;
     private ConcurrentLinkedQueue<Peer> peers, connected;
-    private long downloaded = 0, uploaded = 0;
 
     public TorrentManager(TorrentClient client, Torrent torrent){
         this.client = client;
         this.torrent = torrent;
 
-        downloadManager = new DownloadManager(torrent.getInfo().getPieces());
+        downloadManager = new DownloadManager(torrent);
         trackers = new ArrayList<>();
         peers = new ConcurrentLinkedQueue<>();
         connected = new ConcurrentLinkedQueue<>();
     }
 
     public void start(){
-        if(getLeft() == 0){
+        if(downloadManager.getLeft() == 0){
             return;
         }
 
@@ -66,7 +65,6 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         }
 
         for(Tracker tracker : trackers){
-            //LISTEN FOR PEERS... -> THEN START DOWNLOADING
             tracker.addPeerListener(this);
             tracker.announce();
         }
@@ -77,7 +75,7 @@ public class TorrentManager implements ConnectionListener, PeerListener {
             return;
         }
 
-        if(getLeft() == 0){
+        if(downloadManager.getLeft() == 0){
             return;
         }
 
@@ -114,17 +112,8 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         return downloadManager;
     }
 
-    public long getDownloaded(){
-        return downloaded;
-    }
-
-    public long getLeft(){
-        return torrent.getInfo().getTotalLength()-downloaded;
-    }
-
-    public long getUploaded(){
-        return uploaded;
-    }
+    /*
+    */
 
     public Torrent getTorrent(){
         return torrent;
@@ -154,6 +143,7 @@ public class TorrentManager implements ConnectionListener, PeerListener {
 
     @Override
     public void onClosed(Peer peer){
+        peer.markStale();
         /*
         peer.markStale();
 

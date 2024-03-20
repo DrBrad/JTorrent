@@ -5,14 +5,29 @@ import java.util.List;
 
 public class DownloadManager {
 
-    private List<Piece> downloading, waiting;
+    private Torrent torrent;
+    private boolean[] completed;
+    //private List<Piece> downloading, waiting;
+    private int numCompleted;
+    private long downloaded = 0, uploaded = 0;
 
-    public DownloadManager(List<Piece> pieces){
-        downloading = new ArrayList<>();
-        waiting = new ArrayList<>();
-        waiting.addAll(pieces);
+    public DownloadManager(Torrent torrent){
+        //waiting = new ArrayList<>();
+        this.torrent = torrent;
+        //downloading = new ArrayList<>();
+        completed = new boolean[torrent.getInfo().getTotalPieces()];
     }
 
+    public void setCompleted(int i){
+        completed[i] = true;
+        numCompleted++;
+    }
+
+    public int getCompleted(){
+        return numCompleted;
+    }
+
+    /*
     public synchronized Piece pollPiece(){
         if(waiting.isEmpty()){
             return null;
@@ -34,8 +49,21 @@ public class DownloadManager {
         downloading.remove(piece);
         waiting.add(piece);
     }
+    */
 
     public synchronized void verify(){
         //VERIFY ALL OF THE PIECES...
+    }
+
+    public long getDownloaded(){
+        return downloaded;
+    }
+
+    public long getLeft(){
+        return torrent.getInfo().getTotalLength()-downloaded;
+    }
+
+    public long getUploaded(){
+        return uploaded;
     }
 }
