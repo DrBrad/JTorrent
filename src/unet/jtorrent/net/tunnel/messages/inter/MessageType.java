@@ -111,7 +111,7 @@ public enum MessageType {
         }
     }, INVALID;
 
-    public MessageType getFromID(byte code){
+    public static MessageType getFromID(byte code){
         for(MessageType message : values()){
             if(code == message.getID()){
                 return message;

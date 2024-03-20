@@ -66,10 +66,20 @@ public class TCPSocket implements Runnable {
                     (in.read() & 0xff));
 
             if(length > 0){
+                byte id = (byte) in.read();
+
+                MessageType type = MessageType.getFromID(id);
+
+                switch(type){
+                    case CHOKE:
+
+                        break;
+                }
             }
 
+            //KEEP ALIVE
 
-            byte id = (byte) in.read();
+
 
             /*
             socket.setKeepAlive(true);
