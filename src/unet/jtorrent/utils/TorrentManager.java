@@ -83,16 +83,19 @@ public class TorrentManager implements ConnectionListener, PeerListener {
                 path.append("/"+p);
             }
 
-            try{
-                File file = new File(destination, path.toString());
-                file.getParentFile().mkdirs();
-                file.createNewFile();
+            File file = new File(destination, path.toString());
+            file.getParentFile().mkdirs();
 
-                RandomAccessFile r = new RandomAccessFile(file, "rw");
-                r.setLength(f.getLength());
+            if(!file.exists()){
+                try{
+                    file.createNewFile();
 
-            }catch(IOException e){
-                e.printStackTrace();
+                    RandomAccessFile r = new RandomAccessFile(file, "rw");
+                    r.setLength(f.getLength());
+
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
             }
         }
     }
