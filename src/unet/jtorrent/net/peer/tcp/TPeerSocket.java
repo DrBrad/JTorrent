@@ -421,6 +421,11 @@ public class TPeerSocket extends PeerSocket {
                         message = new PieceMessage();
                         message.decode(buf);
 
+                        //((PieceMessage) message).getBegin();
+
+                        //SAVE PIECE...
+
+
                         System.out.println("PIECE:  "+buf.length);
 
                         //ONCE COMPLETE - SET TO NOT REQUESTING
@@ -435,10 +440,10 @@ public class TPeerSocket extends PeerSocket {
                 case PORT:
                     break;
 
-                //default:
-                //    //System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
-                //    System.err.println("ERROR    "+id+"  "+in.available()+"       "+peer.getHostAddress().getHostAddress());
-                //    return;
+                default:
+                    //System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
+                    System.err.println("ERROR    "+id+"  "+in.available()+"       "+peer.getHostAddress().getHostAddress());
+                    return;
             }
 
             System.out.println("MESSAGE: "+type+"       "+peer.getHostAddress().getHostAddress());
