@@ -83,10 +83,12 @@ public class TPeerSocket extends PeerSocket {
             while(!socket.isClosed()){
                 receive();
 
+                /*
                 if(in.available() < 1){
                     out.write(new KeepAliveMessage().encode());
                     out.flush();
                 }
+                */
             }
 
             System.err.println("CLOSE NAtURAL");
@@ -429,8 +431,8 @@ public class TPeerSocket extends PeerSocket {
 
                         //SAVE PIECE...
 
+                    try{
 
-                    /*
                         TorrentFile torrentFile = null;
                         long previousLength = 0;
                         long offset = (((PieceMessage) message).getIndex()*manager.getTorrent().getInfo().getPieceLength())+((PieceMessage) message).getBegin();
@@ -483,15 +485,17 @@ public class TPeerSocket extends PeerSocket {
                             }
 
                             file.write(block, 0, len);
-                            System.err.println("WRITING - "+torrentFile.getIndex()+" - "+len+"  OFFSET "+offset+" PIECE-LENGTH "+manager.getTorrent().getInfo().getPieceLength()+" READ "+read);
+                            System.err.println("WRITING - "+torrentFile.getIndex()+" - "+len+" - "+peer.getHostAddress().getHostAddress()+"  OFFSET "+offset+" PIECE-LENGTH "+manager.getTorrent().getInfo().getPieceLength()+" READ "+read);
                             offset += len;
                         }
 
                         file.close();
 
                         System.err.println("========================================= COMPLETED TORRENT =========================================");
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
 
-                        */
 
                         /*
                         Piece piece = manager.getTorrent().getInfo().getPiece(((PieceMessage) message).getIndex());
@@ -571,7 +575,7 @@ public class TPeerSocket extends PeerSocket {
                 default:
                     //System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
                     System.err.println("ERROR    "+id+"  "+in.available()+"       "+peer.getHostAddress().getHostAddress());
-                    return;
+                    break;
             }
 
             System.out.println("MESSAGE: "+type+"       "+peer.getHostAddress().getHostAddress());
