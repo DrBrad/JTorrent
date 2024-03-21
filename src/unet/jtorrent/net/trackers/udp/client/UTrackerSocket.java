@@ -14,9 +14,8 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class UDPTrackerSocket {
+public class UTrackerSocket {
 
     //BEP 15
     public static final int TID_LENGTH = 4;
@@ -29,7 +28,7 @@ public class UDPTrackerSocket {
     private ResponseTracker tracker;
     private DatagramSocket socket;
 
-    public UDPTrackerSocket(){
+    public UTrackerSocket(){
         //URI uri = new URI(link);
         //address = new InetSocketAddress(InetAddress.getByName(uri.getHost()), uri.getPort());
         tracker = new ResponseTracker(this);

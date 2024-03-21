@@ -2,7 +2,7 @@ package unet.jtorrent.utils;
 
 import unet.jtorrent.net.peer.inter.ConnectionListener;
 import unet.jtorrent.net.peer.inter.PeerSocket;
-import unet.jtorrent.net.peer.tcp.TCPPeerSocket;
+import unet.jtorrent.net.peer.tcp.TPeerSocket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ public class ConnectionManager {
 
     private TorrentManager manager;
     private List<Peer> peers;
-    private List<TCPPeerSocket> connected;
+    private List<TPeerSocket> connected;
 
     public ConnectionManager(TorrentManager manager){
         this.manager = manager;
@@ -30,12 +30,17 @@ public class ConnectionManager {
         Peer peer = peers.get(0);
         peers.remove(peer);
 
-        TCPPeerSocket socket = new TCPPeerSocket(manager, peer);
+        TPeerSocket socket = new TPeerSocket(manager, peer);
         connected.add(socket);
         socket.addConnectionListener(new ConnectionListener(){
             @Override
             public void onConnected(PeerSocket socket){
                 peer.setSeen();
+            }
+
+            @Override
+            public void onReadyToSend(PeerSocket socket){
+                manager.getDownloadManager().downloadPiece(socket);
             }
 
             @Override
@@ -57,7 +62,7 @@ public class ConnectionManager {
         new Thread(socket).start();
     }
 
-    public List<TCPPeerSocket> getConnections(){
+    public List<TPeerSocket> getConnections(){
         return connected;
     }
 

@@ -5,5 +5,7 @@ public enum PieceState {
     WAITING,
     DOWNLOADING,
     COMPLETE,
-    STOPPED
+    STOPPED,
+    VERIFIED,
+    INVALID
 }

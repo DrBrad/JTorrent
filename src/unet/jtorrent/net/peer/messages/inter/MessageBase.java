@@ -23,6 +23,10 @@ public class MessageBase {
 
     }
 
+    public MessageType getType(){
+        return type;
+    }
+
     public int getLength(){
         return type.getLength()+5;
     }

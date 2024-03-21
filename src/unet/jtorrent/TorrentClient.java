@@ -1,6 +1,6 @@
 package unet.jtorrent;
 
-import unet.jtorrent.net.trackers.udp.client.UDPTrackerSocket;
+import unet.jtorrent.net.trackers.udp.client.UTrackerSocket;
 import unet.jtorrent.utils.Torrent;
 import unet.jtorrent.utils.TorrentManager;
 
@@ -12,13 +12,13 @@ import java.util.List;
 public class TorrentClient {
 
     public static final int MAX_OPEN_CONNECTIONS = 50;
-    private UDPTrackerSocket udpAnnounce;
+    private UTrackerSocket udpAnnounce;
     private List<TorrentManager> torrents;
     private int maxPeersPerRequest = -1;
 
     public TorrentClient(){
         torrents = new ArrayList<>();
-        udpAnnounce = new UDPTrackerSocket();
+        udpAnnounce = new UTrackerSocket();
         //download = new DownloadClient();
     }
 
@@ -78,7 +78,7 @@ public class TorrentClient {
     }
     */
 
-    public UDPTrackerSocket getUdpAnnounceSocket(){
+    public UTrackerSocket getUdpAnnounceSocket(){
         return udpAnnounce;
     }
 

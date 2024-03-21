@@ -52,12 +52,69 @@ public class DownloadManager {
         }
     }
 
-    private void downloadPiece(int i){
-        for(PeerSocket socket : manager.getConnectionManager().getConnections()){
+    public boolean isInterested(boolean[] available){
+        for(int i = 0; i < available.length; i++){
+            if(!available[i]){
+                continue;
+            }
+
+            switch(manager.getTorrent().getInfo().getPiece(i).getState()){
+                case WAITING:
+                case STOPPED:
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public void downloadPieces(){
+        /*
+        for(Piece piece : manager.getTorrent().getInfo().getPieces()){
+            downloadPiece(piece);
+        }
+        */
+    }
+
+    public void downloadPiece(PeerSocket socket){
+        Piece piece = null;
+        for(int i = 0; i < socket.getPieces().length; i++){
             if(socket.getPieces()[i]){
+                Piece p = manager.getTorrent().getInfo().getPiece(i);
+                switch(p.getState()){
+                    case STOPPED:
+                    case WAITING:
+                        piece = p;
+                        break;
+                }
+            }
+        }
+
+        if(piece == null){
+            return;
+        }
+
+        piece.setState(PieceState.DOWNLOADING);
+
+        RequestMessage message = new RequestMessage();
+        message.setIndex(piece.getIndex());
+        message.setBegin(piece.getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
+        message.setLength(BLOCK_SIZE);
+
+        try{
+            socket.send(message);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+
+        System.out.println("SENT REQUEST FOR: "+piece.getIndex()+"       "+socket.getPeer().getHostAddress().getHostAddress());
+    }
+
+    private void downloadPiece(Piece piece){
+        for(PeerSocket socket : manager.getConnectionManager().getConnections()){
+            if(socket.getPieces()[piece.getIndex()]){
                 RequestMessage message = new RequestMessage();
-                message.setIndex(manager.getTorrent().getInfo().getPiece(i).getIndex());
-                message.setBegin(manager.getTorrent().getInfo().getPiece(i).getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
+                message.setIndex(piece.getIndex());
+                message.setBegin(piece.getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
                 message.setLength(BLOCK_SIZE);
 
                 try{

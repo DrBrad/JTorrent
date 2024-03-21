@@ -3,6 +3,8 @@ package unet.jtorrent.net.peer.tcp;
 import unet.jtorrent.net.peer.inter.ConnectionListener;
 import unet.jtorrent.net.peer.inter.PeerSocket;
 import unet.jtorrent.net.peer.messages.BitfieldMessage;
+import unet.jtorrent.net.peer.messages.InterestedMessage;
+import unet.jtorrent.net.peer.messages.KeepAliveMessage;
 import unet.jtorrent.net.peer.messages.inter.MessageBase;
 import unet.jtorrent.net.peer.messages.inter.MessageType;
 import unet.jtorrent.utils.*;
@@ -10,20 +12,18 @@ import unet.jtorrent.utils.inter.PieceState;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-public class TCPPeerSocket extends PeerSocket {
+public class TPeerSocket extends PeerSocket {
 
     //public static final String BITTORRENT_PROTOCOL_IDENTIFIER = "BitTorrent protocol";
     public static final byte[] PROTOCOL_HEADER = new byte[]{ 'B', 'i', 't', 'T', 'o', 'r', 'r', 'e', 'n', 't', ' ', 'p', 'r', 'o', 't', 'o', 'c', 'o', 'l' };
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    private boolean bitfield, choked;
+    private boolean bitfield, choked, interested, requesting;
 
-    public TCPPeerSocket(TorrentManager manager, Peer peer){
+    public TPeerSocket(TorrentManager manager, Peer peer){
         super(manager, peer);
     }
 
@@ -32,10 +32,11 @@ public class TCPPeerSocket extends PeerSocket {
         try{
             socket = new Socket();
             socket.connect(peer.getAddress(), 5000);
-            if(!socket.isConnected()){
-                close();
-                return;
-            }
+            socket.setSoTimeout(5000);
+            //if(!socket.isConnected()){
+            //    close();
+            //    return;
+            //}
 
             in = socket.getInputStream();
             out = socket.getOutputStream();
@@ -62,16 +63,33 @@ public class TCPPeerSocket extends PeerSocket {
                 out.flush();
             }
 
+            receive();
+
+            //SEND INTERESTED
+            if(manager.getDownloadManager().isInterested(pieces)){
+                out.write(new InterestedMessage().encode());
+                out.flush();
+            }
+
+            if(!listeners.isEmpty()){
+                for(ConnectionListener listener : listeners){
+                    listener.onReadyToSend(this);
+                }
+            }
+
+            //RECEIVER - KEEP ALIVE EVERY 5 SECONDS...
+            while(!socket.isClosed()){
+                receive();
+
+                if(in.available() < 1){
+                    out.write(new KeepAliveMessage().encode());
+                    out.flush();
+                }
+            }
+            /*
             new Thread(new Runnable(){
                 @Override
                 public void run(){
-                    while(!socket.isClosed()){
-                        try{
-                            receive();
-                        }catch(IOException e){
-                            e.printStackTrace();
-                        }
-                    }
                 }
             }).start();
 
@@ -253,7 +271,7 @@ public class TCPPeerSocket extends PeerSocket {
             //e.printStackTrace();
 
         }finally{
-            close();
+            //close();
         }
     }
 
@@ -335,35 +353,55 @@ public class TCPPeerSocket extends PeerSocket {
                     break;
 
                 case INTERESTED:
+                    interested = true;
                     break;
 
                 case NOT_INTERESTED:
+                    interested = false;
                     break;
 
-                case HAVE:
-                    break;
-
-                case BITFIELD:
-                    if(bitfield){
-                        throw new IOException("Peer sent bitfield more than once.");
+                case HAVE: {
+                        //MODIFY BITFIELD WITH NEW CHANGES...
+                        byte[] buf = new byte[length-1];
+                        in.read(buf);
                     }
-
-                    if(length-1 != (int) Math.ceil(manager.getTorrent().getInfo().getTotalPieces()/8.0)){
-                        throw new IOException("Bitfield is incorrect size");
-                    }
-
-                    message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //ONLY ALLOWED AFTER HANDSHAKE...
-                    byte[] buf = new byte[length-1];
-                    in.read(buf);
-                    message.decode(buf);
-                    pieces = ((BitfieldMessage) message).getPieces();
-                    bitfield = true;
                     break;
 
-                case REQUEST:
+                case BITFIELD: {
+                        if(bitfield){
+                            throw new IOException("Peer sent bitfield more than once.");
+                        }
+
+                        if(length-1 != (int) Math.ceil(manager.getTorrent().getInfo().getTotalPieces()/8.0)){
+                            throw new IOException("Bitfield is incorrect size");
+                        }
+
+                        message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //ONLY ALLOWED AFTER HANDSHAKE...
+                        byte[] buf = new byte[length-1];
+                        in.read(buf);
+                        message.decode(buf);
+                        pieces = ((BitfieldMessage) message).getPieces();
+                        bitfield = true;
+                    }
+                    break;
+
+                case REQUEST: {
+                        byte[] buf = new byte[length-1];
+                        in.read(buf);
+
+                        if(!interested){
+                            //OTHERWISE IGNORE...
+                            return;
+                        }
+                    }
+                    //System.out.println("REQUEST");
                     break;
 
                 case PIECE:
+                    //System.out.println("PIECE");
+                    //ONCE COMPLETE - SET TO NOT REQUESTING
+                    //requesting = false;
+                    //LISTENER FOR COMPLETE
                     break;
 
                 case CANCEL:
@@ -376,6 +414,8 @@ public class TCPPeerSocket extends PeerSocket {
                     //System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
                     return;
             }
+
+            System.out.println("MESSAGE: "+type+"       "+peer.getHostAddress().getHostAddress());
 
         //}else{
         //    socket.setKeepAlive(true); //MAYBE MAYBE NOT FOR THIS...
@@ -390,7 +430,11 @@ public class TCPPeerSocket extends PeerSocket {
     @Override
     public void send(MessageBase message)throws IOException {
         if(choked){
+            return;
+        }
 
+        if(message.getType() == MessageType.REQUEST){
+            requesting = true;
         }
         out.write(message.encode());
         out.flush();
@@ -402,6 +446,10 @@ public class TCPPeerSocket extends PeerSocket {
 
     public boolean isChoked(){
         return choked;
+    }
+
+    public boolean isRequesting(){
+        return requesting;
     }
 
     @Override

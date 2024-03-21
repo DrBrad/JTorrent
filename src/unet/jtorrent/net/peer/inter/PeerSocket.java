@@ -36,6 +36,10 @@ public abstract class PeerSocket implements Runnable {
         return pieces;
     }
 
+    public Peer getPeer(){
+        return peer;
+    }
+
     public boolean containsConnectionListener(ConnectionListener listener){
         return listeners.contains(listener);
     }
