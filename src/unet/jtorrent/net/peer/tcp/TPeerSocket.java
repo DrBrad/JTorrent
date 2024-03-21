@@ -394,8 +394,9 @@ public class TPeerSocket extends PeerSocket {
                         message.decode(buf);
                         pieces = ((BitfieldMessage) message).getPieces();
                         bitfield = true;
+                        System.out.println("BITFIELD: "+peer.getHostAddress().getHostAddress()+" "+message);
                     }
-                    break;
+                    return;
 
                 case REQUEST: {
                         byte[] buf = new byte[length-1];

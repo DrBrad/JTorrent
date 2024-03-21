@@ -80,11 +80,10 @@ public class DownloadManager {
         for(int i = 0; i < socket.getPieces().length; i++){
             if(socket.getPieces()[i]){
                 Piece p = manager.getTorrent().getInfo().getPiece(i);
-                switch(p.getState()){
-                    case STOPPED:
-                    case WAITING:
-                        piece = p;
-                        break;
+                if(p.getState() == PieceState.WAITING ||
+                        p.getState() == PieceState.STOPPED){
+                    piece = p;
+                    break;
                 }
             }
         }
