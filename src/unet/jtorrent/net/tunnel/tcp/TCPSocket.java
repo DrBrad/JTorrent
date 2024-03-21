@@ -104,7 +104,7 @@ public class TCPSocket implements Runnable {
 
 
                 TorrentFile torrentFile = null;
-                long offset = 0;
+                long offset = piece.getOffset();
                 for(TorrentFile f : manager.getTorrent().getInfo().getFiles()){
                     if((long) piece.getIndex()*manager.getTorrent().getInfo().getPieceLength() < offset+f.getLength()){
                         torrentFile = f;
