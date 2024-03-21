@@ -50,6 +50,11 @@ public class PieceMessage extends MessageBase {
         System.arraycopy(buf, 8, block, 0, block.length);
     }
 
+    @Override
+    public int getLength(){
+        return super.getLength()+block.length;
+    }
+
     public void setIndex(int index){
         this.index = index;
     }
