@@ -423,13 +423,14 @@ public class TPeerSocket extends PeerSocket {
                         message = new PieceMessage();
                         message.decode(buf);
 
-                        System.err.println("READING PIECE START   "+peer.getHostAddress().getHostAddress());
+                        //System.err.println("READING PIECE START   "+peer.getHostAddress().getHostAddress());
 
                         //((PieceMessage) message).getBegin();
 
                         //SAVE PIECE...
 
 
+                    /*
                         TorrentFile torrentFile = null;
                         long previousLength = 0;
                         long offset = (((PieceMessage) message).getIndex()*manager.getTorrent().getInfo().getPieceLength())+((PieceMessage) message).getBegin();
@@ -482,7 +483,7 @@ public class TPeerSocket extends PeerSocket {
                             }
 
                             file.write(block, 0, len);
-                            System.err.println("WRITING - "+torrentFile.getIndex()+" - "+len+"  OFFSET "+offset+" PIECE-LENGTH"+manager.getTorrent().getInfo().getPieceLength()+" READ "+read);
+                            System.err.println("WRITING - "+torrentFile.getIndex()+" - "+len+"  OFFSET "+offset+" PIECE-LENGTH "+manager.getTorrent().getInfo().getPieceLength()+" READ "+read);
                             offset += len;
                         }
 
@@ -490,6 +491,7 @@ public class TPeerSocket extends PeerSocket {
 
                         System.err.println("========================================= COMPLETED TORRENT =========================================");
 
+                        */
 
                         /*
                         Piece piece = manager.getTorrent().getInfo().getPiece(((PieceMessage) message).getIndex());
