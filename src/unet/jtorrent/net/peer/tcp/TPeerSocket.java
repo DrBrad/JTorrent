@@ -3,6 +3,7 @@ package unet.jtorrent.net.peer.tcp;
 import unet.jtorrent.net.peer.inter.ConnectionListener;
 import unet.jtorrent.net.peer.inter.PeerSocket;
 import unet.jtorrent.net.peer.messages.BitfieldMessage;
+import unet.jtorrent.net.peer.messages.HaveMessage;
 import unet.jtorrent.net.peer.messages.InterestedMessage;
 import unet.jtorrent.net.peer.messages.KeepAliveMessage;
 import unet.jtorrent.net.peer.messages.inter.MessageBase;
@@ -51,7 +52,7 @@ public class TPeerSocket extends PeerSocket {
 
 
             //SEND BIT-FIELD
-            if(manager.getDownloadManager().getTotalCompleted() > 0){
+            //if(manager.getDownloadManager().getTotalCompleted() > 0){
                 BitfieldMessage message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //USE DOWNLOAD MANAGER FOR THIS...
                 for(Piece piece : manager.getTorrent().getInfo().getPieces()){
                     if(piece.getState() == PieceState.COMPLETE){
@@ -61,7 +62,7 @@ public class TPeerSocket extends PeerSocket {
 
                 out.write(message.encode());
                 out.flush();
-            }
+            //}
 
             receive();
 
@@ -86,6 +87,8 @@ public class TPeerSocket extends PeerSocket {
                     out.flush();
                 }
             }
+
+            System.err.println("CLOSE NAtURAL");
             /*
             new Thread(new Runnable(){
                 @Override
@@ -272,6 +275,11 @@ public class TPeerSocket extends PeerSocket {
 
         }finally{
             //close();
+            if(!listeners.isEmpty()){
+                for(ConnectionListener listener : listeners){
+                    listener.onClosed(this);
+                }
+            }
         }
     }
 
@@ -362,10 +370,14 @@ public class TPeerSocket extends PeerSocket {
 
                 case HAVE: {
                         //MODIFY BITFIELD WITH NEW CHANGES...
+                        message = new HaveMessage(); //ONLY ALLOWED AFTER HANDSHAKE...
                         byte[] buf = new byte[length-1];
                         in.read(buf);
+                        message.decode(buf);
+                        pieces[((HaveMessage) message).getIndex()] = true;
+                        System.out.println("MESSAGE - HAVE: "+((HaveMessage) message).getIndex()+"       "+peer.getHostAddress().getHostAddress());
                     }
-                    break;
+                    return;//MAKE break;
 
                 case BITFIELD: {
                         if(bitfield){
@@ -412,6 +424,7 @@ public class TPeerSocket extends PeerSocket {
 
                 default:
                     //System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
+                    System.err.println("ERROR    "+id+"  "+in.available()+"       "+peer.getHostAddress().getHostAddress());
                     return;
             }
 
