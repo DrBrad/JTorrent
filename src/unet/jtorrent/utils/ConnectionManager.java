@@ -40,7 +40,7 @@ public class ConnectionManager {
 
             @Override
             public void onReadyToSend(PeerSocket socket){
-                manager.getDownloadManager().downloadPiece(socket);
+                manager.getDownloadManager().startDownloadingPiece(socket);
             }
 
             @Override

@@ -75,7 +75,7 @@ public class DownloadManager {
         */
     }
 
-    public void downloadPiece(PeerSocket socket){
+    public void startDownloadingPiece(PeerSocket socket){
         Piece piece = null;
         for(int i = 0; i < socket.getPieces().length; i++){
             if(socket.getPieces()[i]){
@@ -126,6 +126,13 @@ public class DownloadManager {
         }
     }
 
+    public void completedPiece(int i){
+        manager.getTorrent().getInfo().getPiece(i).setState(PieceState.COMPLETE);
+
+        //STATE THAT WE NOW HAVE THE PIECE...
+
+        numCompleted++;
+    }
 
     /*
     public Piece startPiece(boolean[] available){
