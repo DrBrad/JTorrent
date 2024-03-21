@@ -18,3 +18,7 @@ BEPs Completed
 | [BEP #48](http://bittorrent.org/beps/bep_0048.html) | - | Tracker information |
 | [BEP #51](http://bittorrent.org/beps/bep_0051.html) | - | DHT Sample Hashing |
 | [BEP #53](http://bittorrent.org/beps/bep_0053.html) | x | Magnet Extensions |
+
+P2P TCP Protocol
+-----
+[BitTorrent Specifications](https://wiki.theory.org/BitTorrentSpecification#Messages)
