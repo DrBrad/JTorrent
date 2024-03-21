@@ -49,6 +49,12 @@ public class DownloadManager {
         }
     }
 
+    private void downloadPiece(){
+
+    }
+
+
+    /*
     public Piece startPiece(boolean[] available){
         if(isComplete()){
             throw new IllegalArgumentException("Torrent is complete.");

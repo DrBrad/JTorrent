@@ -1,44 +1,31 @@
-package unet.jtorrent.net.tunnel.tcp;
+package unet.jtorrent.net.peer.tcp;
 
-import unet.jtorrent.net.tunnel.inter.ConnectionListener;
-import unet.jtorrent.net.tunnel.messages.BitfieldMessage;
-import unet.jtorrent.net.tunnel.messages.InterestedMessage;
-import unet.jtorrent.net.tunnel.messages.KeepAliveMessage;
-import unet.jtorrent.net.tunnel.messages.RequestMessage;
-import unet.jtorrent.net.tunnel.messages.inter.MessageBase;
-import unet.jtorrent.net.tunnel.messages.inter.MessageType;
+import unet.jtorrent.net.peer.inter.ConnectionListener;
+import unet.jtorrent.net.peer.inter.PeerSocket;
+import unet.jtorrent.net.peer.messages.BitfieldMessage;
+import unet.jtorrent.net.peer.messages.inter.MessageBase;
+import unet.jtorrent.net.peer.messages.inter.MessageType;
 import unet.jtorrent.utils.*;
 import unet.jtorrent.utils.inter.PieceState;
 
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TCPSocket implements Runnable {
+public class TCPPeerSocket extends PeerSocket {
 
     //public static final String BITTORRENT_PROTOCOL_IDENTIFIER = "BitTorrent protocol";
     public static final byte[] PROTOCOL_HEADER = new byte[]{ 'B', 'i', 't', 'T', 'o', 'r', 'r', 'e', 'n', 't', ' ', 'p', 'r', 'o', 't', 'o', 'c', 'o', 'l' };
     public static final int BLOCK_SIZE = 4096;
-    private TorrentManager manager;
-    private Peer peer;
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    private List<ConnectionListener> listeners;
-    private byte[] peerID;
-    private boolean bitfield;
-    private boolean[] pieces;
-    private Piece piece;
-    private boolean choked, test;
-    private int mcount;
+    private boolean bitfield, choked;
 
-    public TCPSocket(TorrentManager manager, Peer peer){
-        this.manager = manager;
-        this.peer = peer;
-        listeners = new ArrayList<>();
+    public TCPPeerSocket(TorrentManager manager, Peer peer){
+        super(manager, peer);
     }
 
     @Override
@@ -54,13 +41,13 @@ public class TCPSocket implements Runnable {
             in = socket.getInputStream();
             out = socket.getOutputStream();
 
-            handshake();
-
             if(!listeners.isEmpty()){
                 for(ConnectionListener listener : listeners){
-                    listener.onConnected(peer);
+                    listener.onConnected(this);
                 }
             }
+
+            handshake();
 
 
             //SEND BIT-FIELD
@@ -78,12 +65,20 @@ public class TCPSocket implements Runnable {
 
             receive();
 
+            new Thread(new Runnable(){
+                @Override
+                public void run(){
+
+                }
+            }).start();
+
             //KeepAliveMessage message = new KeepAliveMessage();
             //out.write(message.encode());
             //out.flush();
             /*
             */
 
+            /*
             out.write(new InterestedMessage().encode());
             out.flush();
 
@@ -255,10 +250,7 @@ public class TCPSocket implements Runnable {
             //e.printStackTrace();
 
         }finally{
-            try{
-                close();
-            }catch(IOException e){
-            }
+            close();
         }
     }
 
@@ -378,26 +370,12 @@ public class TCPSocket implements Runnable {
                     break;
 
                 default:
-                    System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
+                    //System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
                     return;
             }
-            mcount++;
 
-            if(test){
-                System.err.println(type+"  "+mcount);//+"  "+message);
-            }else{
-                System.out.println(type+"  "+mcount);//+"  "+message);
-            }
-
-        }else{
-            mcount++;
-            socket.setKeepAlive(true); //MAYBE MAYBE NOT FOR THIS...
-            if(test){
-                System.err.println("KEEPALIVE  "+mcount);//+"  "+message);
-            }else{
-                System.out.println("KEEPALIVE  "+mcount);//+"  "+message);
-            }
-            //System.out.println("KEEP_ALIVE  "+bitfield);
+        //}else{
+        //    socket.setKeepAlive(true); //MAYBE MAYBE NOT FOR THIS...
         }
 
         if(!bitfield){
@@ -406,42 +384,33 @@ public class TCPSocket implements Runnable {
         }
     }
 
-    public void close()throws IOException {
+    @Override
+    public void send(MessageBase message)throws IOException {
+        if(choked){
+
+        }
+        out.write(message.encode());
+        out.flush();
+    }
+
+    public boolean hasBitfield(){
+        return bitfield;
+    }
+
+    public boolean isChoked(){
+        return choked;
+    }
+
+    @Override
+    public void close(){
         //if(piece != null){
         //    manager.getDownloadManager().failedPiece(piece);
         //}
-
-        if(!listeners.isEmpty()){
-            for(ConnectionListener listener : listeners){
-                listener.onClosed(peer);
-            }
-        }
-
-        //System.err.println("CLOSE");
-
-        if(!socket.isClosed()){
-            if(!socket.isInputShutdown()){
-                socket.shutdownInput();
-            }
-
-            if(!socket.isOutputShutdown()){
-                socket.shutdownOutput();
-            }
-
+        try{
             socket.close();
+        }catch(IOException e){
+            e.printStackTrace();
         }
-    }
-
-    public boolean containsConnectionListener(ConnectionListener listener){
-        return listeners.contains(listener);
-    }
-
-    public void addConnectionListener(ConnectionListener listener){
-        listeners.add(listener);
-    }
-
-    public void removeConnectionListener(ConnectionListener listener){
-        listeners.remove(listener);
     }
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();

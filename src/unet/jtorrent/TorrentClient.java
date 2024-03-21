@@ -11,7 +11,7 @@ import java.util.List;
 
 public class TorrentClient {
 
-    public static final int MAX_OPEN_CONNECTIONS = 50, MAX_RETRY_COUNT = 3;
+    public static final int MAX_OPEN_CONNECTIONS = 50;
     private UDPTrackerSocket udpAnnounce;
     private List<TorrentManager> torrents;
     private int maxPeersPerRequest = -1;

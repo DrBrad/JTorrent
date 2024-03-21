@@ -1,4 +1,4 @@
-package unet.jtorrent.net.tunnel.tcp;
+package unet.jtorrent.net.peer.tcp;
 
 import unet.jtorrent.utils.Peer;
 

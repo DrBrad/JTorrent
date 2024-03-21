@@ -1,7 +1,7 @@
-package unet.jtorrent.net.tunnel.messages;
+package unet.jtorrent.net.peer.messages;
 
-import unet.jtorrent.net.tunnel.messages.inter.MessageBase;
-import unet.jtorrent.net.tunnel.messages.inter.MessageType;
+import unet.jtorrent.net.peer.messages.inter.MessageBase;
+import unet.jtorrent.net.peer.messages.inter.MessageType;
 
 public class UnChokeMessage extends MessageBase {
 

@@ -1,4 +1,4 @@
-package unet.jtorrent.net.tunnel.messages.inter;
+package unet.jtorrent.net.peer.messages.inter;
 
 public enum MessageType {
     /*

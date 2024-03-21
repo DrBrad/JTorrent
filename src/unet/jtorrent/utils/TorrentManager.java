@@ -5,50 +5,37 @@ import unet.jtorrent.announce.HTTPTracker;
 import unet.jtorrent.announce.UDPTracker;
 import unet.jtorrent.announce.inter.PeerListener;
 import unet.jtorrent.announce.inter.Tracker;
-import unet.jtorrent.net.tunnel.inter.ConnectionListener;
-import unet.jtorrent.net.tunnel.tcp.TCPSocket;
 import unet.jtorrent.utils.inter.TrackerTypes;
 
-import javax.sound.midi.Track;
 import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static unet.jtorrent.TorrentClient.MAX_OPEN_CONNECTIONS;
-import static unet.jtorrent.utils.Peer.MAX_STALE_COUNT;
 
-public class TorrentManager implements ConnectionListener, PeerListener {
+public class TorrentManager {
 
     private TorrentClient client;
     private Torrent torrent;
 
     private List<Tracker> trackers;
     private DownloadManager downloadManager;
-    private ConcurrentLinkedQueue<Peer> peers, connected;
+    private ConnectionManager connectionManager;
 
     public TorrentManager(TorrentClient client, Torrent torrent, File destination){
         this.client = client;
         this.torrent = torrent;
 
         downloadManager = new DownloadManager(torrent, destination);
+        connectionManager = new ConnectionManager(this);
         trackers = new ArrayList<>();
-        peers = new ConcurrentLinkedQueue<>();
-        connected = new ConcurrentLinkedQueue<>();
     }
 
     public void start(){
         downloadManager.createFiles();
-
-        if(downloadManager.getLeft() == 0){
-            return;
-        }
 
         for(URI announce : torrent.getAnnounceList()){
             System.out.println(announce.toString());
@@ -69,27 +56,18 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         }
 
         for(Tracker tracker : trackers){
-            tracker.addPeerListener(this);
+            tracker.addPeerListener(new PeerListener(){
+                @Override
+                public void onPeersReceived(List<Peer> peers){
+                    connectionManager.addPeers(peers);
+
+                    for(int i = connectionManager.getTotalOpenConnections(); i < MAX_OPEN_CONNECTIONS; i++){
+                        connectionManager.connectToPeer();
+                    }
+                }
+            });
             tracker.announce();
         }
-    }
-
-    private void openConnection(){
-        if(connected.size() >= MAX_OPEN_CONNECTIONS){
-            return;
-        }
-
-        if(downloadManager.getLeft() == 0){
-            return;
-        }
-
-        Peer peer = peers.poll();
-        connected.offer(peer);
-
-        TCPSocket socket = new TCPSocket(this, peer);
-        socket.addConnectionListener(this);
-
-        new Thread(socket).start();
     }
 
     /*
@@ -116,48 +94,11 @@ public class TorrentManager implements ConnectionListener, PeerListener {
         return downloadManager;
     }
 
-    /*
-    */
+    public ConnectionManager getConnectionManager(){
+        return connectionManager;
+    }
 
     public Torrent getTorrent(){
         return torrent;
-    }
-
-    public int getTotalPotentialPeers(){
-        return peers.size();
-    }
-
-    public int getTotalOpenConnections(){
-        return connected.size();
-    }
-
-    @Override
-    public void onPeersReceived(List<Peer> peers){
-        this.peers.addAll(peers);
-        System.out.println("RECEIVED PEERS: "+getTotalPotentialPeers()+"  "+getTotalOpenConnections());
-
-        for(int i = connected.size(); i < MAX_OPEN_CONNECTIONS; i++){
-            openConnection();
-        }
-    }
-
-    @Override
-    public void onConnected(Peer peer){
-        peer.setSeen();
-    }
-
-    @Override
-    public void onClosed(Peer peer){
-        peer.markStale();
-
-        if(peer.getStale() < MAX_STALE_COUNT){
-            peers.add(peer);
-        }
-
-        connected.remove(peer); //NOT NEEDED...
-
-        if(!peers.isEmpty()){
-            openConnection();
-        }
     }
 }
