@@ -32,7 +32,7 @@ public class TPeerSocket extends PeerSocket {
         try{
             socket = new Socket();
             socket.connect(peer.getAddress(), 5000);
-            socket.setSoTimeout(5000);
+            //socket.setSoTimeout(5000);
             //if(!socket.isConnected()){
             //    close();
             //    return;
