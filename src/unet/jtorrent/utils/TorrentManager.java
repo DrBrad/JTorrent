@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static unet.jtorrent.TorrentClient.MAX_OPEN_CONNECTIONS;
-import static unet.jtorrent.TorrentClient.MAX_RETRY_COUNT;
+import static unet.jtorrent.utils.Peer.MAX_STALE_COUNT;
 
 public class TorrentManager implements ConnectionListener, PeerListener {
 
@@ -143,35 +143,17 @@ public class TorrentManager implements ConnectionListener, PeerListener {
 
     @Override
     public void onConnected(Peer peer){
+        peer.setSeen();
     }
 
     @Override
     public void onClosed(Peer peer){
         peer.markStale();
-        /*
-        peer.markStale();
 
-        if(peer.getStale() >= MAX_RETRY_COUNT){
-            connected.remove(peer); //NOT NEEDED...
-
-            if(peers.isEmpty()){
-                for(Tracker tracker : trackers){
-                    tracker.scrape();
-                }
-
-                //USE PEERS OBTAINED...
-
-            }else{
-                System.err.println("EXHAUSTED USING ALTERNATIVE PEER");
-                openConnection(peers.get(0));
-            }
-
-            return;
+        if(peer.getStale() < MAX_STALE_COUNT){
+            peers.add(peer);
         }
 
-        System.err.println("RETRYING");
-        openConnection(peer);
-        */
         connected.remove(peer); //NOT NEEDED...
 
         if(!peers.isEmpty()){

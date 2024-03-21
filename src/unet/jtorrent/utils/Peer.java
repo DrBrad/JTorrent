@@ -5,6 +5,8 @@ import java.net.InetSocketAddress;
 
 public class Peer {
 
+    public static final int MAX_STALE_COUNT = 3;
+
     private InetSocketAddress address;
     private int stale;
 
