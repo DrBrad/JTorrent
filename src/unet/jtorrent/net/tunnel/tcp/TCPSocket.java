@@ -32,6 +32,8 @@ public class TCPSocket implements Runnable {
     private boolean bitfield;
     private boolean[] pieces;
     private Piece piece;
+    private boolean choked, test;
+    private int mcount;
 
     public TCPSocket(TorrentManager manager, Peer peer){
         this.manager = manager;
@@ -85,12 +87,15 @@ public class TCPSocket implements Runnable {
             out.write(new InterestedMessage().encode());
             out.flush();
 
-            receive();
+                //System.out.println("REQUESTING: "+piece.getIndex());
+
+            while (in.available() > 0){
+                receive();
+            }
+            //System.err.println("SENDING REQUEST FOR: "+mcount);
 
             piece = manager.getDownloadManager().startPiece(pieces);
             if(pieces != null){
-                System.out.println("REQUESTING: "+piece.getIndex());
-
                 RequestMessage message = new RequestMessage();
                 message.setIndex(piece.getIndex());
                 message.setBegin(piece.getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
@@ -98,10 +103,75 @@ public class TCPSocket implements Runnable {
                 out.write(message.encode());
                 out.flush();
 
+                test = true;
+                while (in.available() > 0){
+                    receive();
+                }
+            }
+
+                /*
+                byte[] buf = new byte[BLOCK_SIZE];
+                int len = in.read(buf);
+
+            int length = (((buf[0] & 0xff) << 24) |
+                    ((buf[1] & 0xff) << 16) |
+                    ((buf[2] & 0xff) << 8) |
+                    (buf[3] & 0xff));
+
+            MessageType type;
+
+            if(length > 0){
+                type = MessageType.getFromID(buf[4]);
+            }else{
+                type = MessageType.KEEP_ALIVE;
+            }
+            System.out.println("READ: "+type+"  "+len);
+                /*
+            int length = (((buf[0] & 0xff) << 24) |
+                    ((buf[1] & 0xff) << 16) |
+                    ((buf[2] & 0xff) << 8) |
+                    (buf[3] & 0xff));
+
+            MessageType type;
+
+            if(length > 0){
+                type = MessageType.getFromID(buf[4]);
+            }else{
+                type = MessageType.KEEP_ALIVE;
+            }
+            System.out.println("READ: "+type+"  "+len);
+
+
 
                 //TIMEOUT AFTER 5 SECONDS...
                 //DETERMINE WHERE THE PIECE SHOULD GO...
 
+                /*
+            for(int i = 0; i < 5; i++){
+                while(in.available() < 1){
+                }
+
+                byte[] buf = new byte[BLOCK_SIZE];
+                int len = in.read(buf);
+                //receive();
+
+
+                int length = (((buf[0] & 0xff) << 24) |
+                        ((buf[1] & 0xff) << 16) |
+                        ((buf[2] & 0xff) << 8) |
+                        (buf[3] & 0xff));
+
+                MessageType type;
+
+                if(length > 0){
+                    type = MessageType.getFromID(buf[4]);
+                }else{
+                    type = MessageType.KEEP_ALIVE;
+                }
+                System.out.println("READ: "+type+"  "+len);
+            }
+
+                /*
 
                 TorrentFile torrentFile = null;
                 long offset = piece.getOffset();
@@ -140,9 +210,9 @@ public class TCPSocket implements Runnable {
                     //DETERMINE FILE... - (index*PIECE_LENGTH) - FILE INDEX STARTS 0+ THEN WE MAY NEED TO SPLIT BLOCK IF BETWEEN FILES
                 }
 
-                System.err.println("COMPLETED  "+read);
+                System.err.println("COMPLETED  "+read);*/
                 //System.out.println("AVAILABLE: "+t.length);
-            }
+            //}
 
             //READ ID CODE - WHAT THEY SENT
 
@@ -242,7 +312,7 @@ public class TCPSocket implements Runnable {
         peerID = new byte[20];
         in.read(peerID);
 
-        System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID)+"  "+manager.getTotalOpenConnections()+"  PEERS: "+manager.getTotalPotentialPeers());
+        //System.out.println(new String(protocolHeader, "ISO-8859-1")+"   "+bytesToHex(peerID)+"  "+manager.getTotalOpenConnections()+"  PEERS: "+manager.getTotalPotentialPeers());
     }
 
     private void receive()throws IOException {
@@ -256,25 +326,27 @@ public class TCPSocket implements Runnable {
 
             MessageType type = MessageType.getFromID(id);
 
-            System.out.println(type+"   "+length+"  "+bitfield);
+            //System.out.println(type+"   "+length+"  "+bitfield);
 
             MessageBase message;
 
             switch(type){
                 case CHOKE:
-                    return;
+                    choked = true;
+                    break;
 
                 case UNCHOKE:
-                    return;
+                    choked = false;
+                    break;
 
                 case INTERESTED:
-                    return;
+                    break;
 
                 case NOT_INTERESTED:
-                    return;
+                    break;
 
                 case HAVE:
-                    return;
+                    break;
 
                 case BITFIELD:
                     if(bitfield){
@@ -294,26 +366,38 @@ public class TCPSocket implements Runnable {
                     break;
 
                 case REQUEST:
-                    return;
+                    break;
 
                 case PIECE:
-                    return;
+                    break;
 
                 case CANCEL:
-                    return;
+                    break;
 
                 case PORT:
-                    return;
+                    break;
 
                 default:
+                    System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
                     return;
             }
+            mcount++;
 
-            System.out.println(message);
+            if(test){
+                System.err.println(type+"  "+mcount);//+"  "+message);
+            }else{
+                System.out.println(type+"  "+mcount);//+"  "+message);
+            }
 
         }else{
+            mcount++;
             socket.setKeepAlive(true); //MAYBE MAYBE NOT FOR THIS...
-            System.out.println("KEEP_ALIVE  "+bitfield);
+            if(test){
+                System.err.println("KEEPALIVE  "+mcount);//+"  "+message);
+            }else{
+                System.out.println("KEEPALIVE  "+mcount);//+"  "+message);
+            }
+            //System.out.println("KEEP_ALIVE  "+bitfield);
         }
 
         if(!bitfield){
