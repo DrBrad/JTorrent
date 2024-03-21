@@ -423,10 +423,10 @@ public class TPeerSocket extends PeerSocket {
                 case PORT:
                     break;
 
-                default:
-                    //System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
-                    System.err.println("ERROR    "+id+"  "+in.available()+"       "+peer.getHostAddress().getHostAddress());
-                    return;
+                //default:
+                //    //System.err.println("ERROR  "+mcount+"  "+in.available());//+"  "+message);
+                //    System.err.println("ERROR    "+id+"  "+in.available()+"       "+peer.getHostAddress().getHostAddress());
+                //    return;
             }
 
             System.out.println("MESSAGE: "+type+"       "+peer.getHostAddress().getHostAddress());

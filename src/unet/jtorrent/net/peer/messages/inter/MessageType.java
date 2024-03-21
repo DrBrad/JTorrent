@@ -40,7 +40,7 @@ public enum MessageType {
     },
     INTERESTED {
         public int getLength(){
-            return 2;
+            return 1;
         }
 
         public byte getID(){
@@ -49,7 +49,7 @@ public enum MessageType {
     },
     NOT_INTERESTED {
         public int getLength(){
-            return 3;
+            return 1;
         }
 
         public byte getID(){
