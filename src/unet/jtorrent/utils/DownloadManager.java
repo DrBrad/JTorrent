@@ -1,5 +1,7 @@
 package unet.jtorrent.utils;
 
+import unet.jtorrent.net.peer.inter.PeerSocket;
+import unet.jtorrent.net.peer.messages.RequestMessage;
 import unet.jtorrent.utils.inter.PieceState;
 
 import java.io.File;
@@ -10,23 +12,24 @@ import java.util.List;
 
 public class DownloadManager {
 
-    private Torrent torrent;
+    public static final int BLOCK_SIZE = 4096;
+    private TorrentManager manager;
     private File destination;
     //private boolean[] completed;
     //private List<Piece> downloading, waiting;
     private int numCompleted;
     private long downloaded = 0, uploaded = 0;
 
-    public DownloadManager(Torrent torrent, File destination){
+    public DownloadManager(TorrentManager manager, File destination){
         //waiting = new ArrayList<>();
-        this.torrent = torrent;
-        this.destination = new File(destination, torrent.getInfo().getName());
+        this.manager = manager;
+        this.destination = new File(destination, manager.getTorrent().getInfo().getName());
         //downloading = new ArrayList<>();
         //completed = new boolean[torrent.getInfo().getTotalPieces()];
     }
 
     public void createFiles(){
-        for(TorrentFile f : torrent.getInfo().getFiles()){
+        for(TorrentFile f : manager.getTorrent().getInfo().getFiles()){
             StringBuilder path = new StringBuilder();
             for(String p : f.getPath()){
                 path.append("/"+p);
@@ -49,8 +52,22 @@ public class DownloadManager {
         }
     }
 
-    private void downloadPiece(){
+    private void downloadPiece(int i){
+        for(PeerSocket socket : manager.getConnectionManager().getConnections()){
+            if(socket.getPieces()[i]){
+                RequestMessage message = new RequestMessage();
+                message.setIndex(manager.getTorrent().getInfo().getPiece(i).getIndex());
+                message.setBegin(manager.getTorrent().getInfo().getPiece(i).getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
+                message.setLength(BLOCK_SIZE);
 
+                try{
+                    socket.send(message);
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+                break;
+            }
+        }
     }
 
 
@@ -128,6 +145,7 @@ public class DownloadManager {
     public synchronized boolean isCompleted(int i){
         //return completed[i];
     }
+    */
 
     public synchronized int getTotalCompleted(){
         return numCompleted;
@@ -161,12 +179,16 @@ public class DownloadManager {
         //VERIFY ALL OF THE PIECES...
     }
 
+    public File getDestination(){
+        return destination;
+    }
+
     public long getDownloaded(){
         return downloaded;
     }
 
     public long getLeft(){
-        return torrent.getInfo().getTotalLength()-downloaded;
+        return manager.getTorrent().getInfo().getTotalLength()-downloaded;
     }
 
     public long getUploaded(){

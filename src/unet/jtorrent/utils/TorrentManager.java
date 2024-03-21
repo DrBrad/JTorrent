@@ -29,7 +29,7 @@ public class TorrentManager {
         this.client = client;
         this.torrent = torrent;
 
-        downloadManager = new DownloadManager(torrent, destination);
+        downloadManager = new DownloadManager(this, destination);
         connectionManager = new ConnectionManager(this);
         trackers = new ArrayList<>();
     }

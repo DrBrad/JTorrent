@@ -18,7 +18,6 @@ public class TCPPeerSocket extends PeerSocket {
 
     //public static final String BITTORRENT_PROTOCOL_IDENTIFIER = "BitTorrent protocol";
     public static final byte[] PROTOCOL_HEADER = new byte[]{ 'B', 'i', 't', 'T', 'o', 'r', 'r', 'e', 'n', 't', ' ', 'p', 'r', 'o', 't', 'o', 'c', 'o', 'l' };
-    public static final int BLOCK_SIZE = 4096;
     private Socket socket;
     private InputStream in;
     private OutputStream out;
@@ -63,12 +62,16 @@ public class TCPPeerSocket extends PeerSocket {
                 out.flush();
             }
 
-            receive();
-
             new Thread(new Runnable(){
                 @Override
                 public void run(){
-
+                    while(!socket.isClosed()){
+                        try{
+                            receive();
+                        }catch(IOException e){
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }).start();
 
