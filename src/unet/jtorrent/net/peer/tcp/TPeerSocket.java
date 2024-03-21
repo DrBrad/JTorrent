@@ -431,6 +431,8 @@ public class TPeerSocket extends PeerSocket {
 
                         //SAVE PIECE...
 
+
+                    /*
                     try{
 
                         TorrentFile torrentFile = null;
