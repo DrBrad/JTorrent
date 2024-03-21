@@ -21,7 +21,7 @@ public class BitfieldMessage extends MessageBase {
         byte[] buf = super.encode();
 
         for(int i = 0; i < pieces.length; i++){
-            buf[6+(i/8)] |= (1 << 7 - (i % 8)); // Set the bit to 1
+            buf[5+(i/8)] |= (1 << 7 - (i % 8)); // Set the bit to 1
         }
 
         return buf;
@@ -33,8 +33,7 @@ public class BitfieldMessage extends MessageBase {
             for(int j = 7; j >= 0; j--){
                 int pieceIndex = i * 8 + (7 - j);
                 if(pieceIndex < pieces.length){
-                    boolean hasPiece = ((buf[i] >> j) & 1) == 1;
-                    pieces[pieceIndex] = hasPiece;
+                    pieces[pieceIndex] = ((buf[i] >> j) & 1) == 1;
                 }
             }
         }

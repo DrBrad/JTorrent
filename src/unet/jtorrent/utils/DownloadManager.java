@@ -97,7 +97,7 @@ public class DownloadManager {
         RequestMessage message = new RequestMessage();
         message.setIndex(piece.getIndex());
         message.setBegin(piece.getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
-        message.setLength(BLOCK_SIZE);
+        message.setMessageLength(BLOCK_SIZE);
 
         try{
             socket.send(message);
@@ -114,7 +114,7 @@ public class DownloadManager {
                 RequestMessage message = new RequestMessage();
                 message.setIndex(piece.getIndex());
                 message.setBegin(piece.getOffset()); //WE COULD BEGIN BASED OFF OF WHERE WE LEFT OFF BUT THIS SEEMS LIKE IT WOULD BE INVALID ANYWAYS...
-                message.setLength(BLOCK_SIZE);
+                message.setMessageLength(BLOCK_SIZE);
 
                 try{
                     socket.send(message);

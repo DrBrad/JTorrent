@@ -52,7 +52,7 @@ public class TPeerSocket extends PeerSocket {
 
 
             //SEND BIT-FIELD
-            //if(manager.getDownloadManager().getTotalCompleted() > 0){
+            if(manager.getDownloadManager().getTotalCompleted() > 0){
                 BitfieldMessage message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //USE DOWNLOAD MANAGER FOR THIS...
                 for(Piece piece : manager.getTorrent().getInfo().getPieces()){
                     if(piece.getState() == PieceState.COMPLETE){
@@ -62,7 +62,7 @@ public class TPeerSocket extends PeerSocket {
 
                 out.write(message.encode());
                 out.flush();
-            //}
+            }
 
             receive();
 
@@ -411,7 +411,7 @@ public class TPeerSocket extends PeerSocket {
                     break;
 
                 case PIECE:
-                    //System.out.println("PIECE");
+                    System.out.println("PIECE");
                     //ONCE COMPLETE - SET TO NOT REQUESTING
                     //requesting = false;
                     //LISTENER FOR COMPLETE

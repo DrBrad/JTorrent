@@ -8,17 +8,17 @@ public class HaveMessage extends MessageBase {
     private int index;
 
     public HaveMessage(){
-        type = MessageType.REQUEST;
+        type = MessageType.HAVE;
     }
 
     @Override
     public byte[] encode(){
         byte[] buf = super.encode();
 
-        buf[6] = ((byte) (index >> 24));
-        buf[7] = ((byte) (index >> 16));
-        buf[8] = ((byte) (index >> 8));
-        buf[9] = ((byte) index);
+        buf[5] = ((byte) (index >> 24));
+        buf[6] = ((byte) (index >> 16));
+        buf[7] = ((byte) (index >> 8));
+        buf[8] = ((byte) index);
 
         return buf;
     }

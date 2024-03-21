@@ -15,20 +15,20 @@ public class RequestMessage extends MessageBase {
     public byte[] encode(){
         byte[] buf = super.encode();
 
-        buf[6] = ((byte) (index >> 24));
-        buf[7] = ((byte) (index >> 16));
-        buf[8] = ((byte) (index >> 8));
-        buf[9] = ((byte) index);
+        buf[5] = ((byte) (index >> 24));
+        buf[6] = ((byte) (index >> 16));
+        buf[7] = ((byte) (index >> 8));
+        buf[8] = ((byte) index);
 
-        buf[10] = ((byte) (begin >> 24));
-        buf[11] = ((byte) (begin >> 16));
-        buf[12] = ((byte) (begin >> 8));
-        buf[13] = ((byte) begin);
+        buf[9] = ((byte) (begin >> 24));
+        buf[10] = ((byte) (begin >> 16));
+        buf[11] = ((byte) (begin >> 8));
+        buf[12] = ((byte) begin);
 
-        buf[14] = ((byte) (length >> 24));
-        buf[15] = ((byte) (length >> 16));
-        buf[16] = ((byte) (length >> 8));
-        buf[17] = ((byte) length);
+        buf[13] = ((byte) (length >> 24));
+        buf[14] = ((byte) (length >> 16));
+        buf[15] = ((byte) (length >> 8));
+        buf[16] = ((byte) length);
 
         return buf;
     }
@@ -54,11 +54,11 @@ public class RequestMessage extends MessageBase {
         return begin;
     }
 
-    public void setLength(int length){
+    public void setMessageLength(int length){
         this.length = length;
     }
 
-    public int getLength(){
+    public int getMessageLength(){
         return length;
     }
 }

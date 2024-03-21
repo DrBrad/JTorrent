@@ -28,6 +28,6 @@ public class MessageBase {
     }
 
     public int getLength(){
-        return type.getLength()+5;
+        return type.getLength()+4;
     }
 }
