@@ -20,7 +20,6 @@ public class MessageBase {
     }
 
     public void decode(byte[] buf){
-
     }
 
     public MessageType getType(){

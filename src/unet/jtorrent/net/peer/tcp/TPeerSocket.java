@@ -2,10 +2,7 @@ package unet.jtorrent.net.peer.tcp;
 
 import unet.jtorrent.net.peer.inter.ConnectionListener;
 import unet.jtorrent.net.peer.inter.PeerSocket;
-import unet.jtorrent.net.peer.messages.BitfieldMessage;
-import unet.jtorrent.net.peer.messages.HaveMessage;
-import unet.jtorrent.net.peer.messages.InterestedMessage;
-import unet.jtorrent.net.peer.messages.KeepAliveMessage;
+import unet.jtorrent.net.peer.messages.*;
 import unet.jtorrent.net.peer.messages.inter.MessageBase;
 import unet.jtorrent.net.peer.messages.inter.MessageType;
 import unet.jtorrent.utils.*;
@@ -53,7 +50,9 @@ public class TPeerSocket extends PeerSocket {
 
             //SEND BIT-FIELD
             if(manager.getDownloadManager().getTotalCompleted() > 0){
-                BitfieldMessage message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //USE DOWNLOAD MANAGER FOR THIS...
+                BitfieldMessage message = new BitfieldMessage(); //USE DOWNLOAD MANAGER FOR THIS...
+                message.setNumPieces(manager.getTorrent().getInfo().getTotalPieces());
+
                 for(Piece piece : manager.getTorrent().getInfo().getPieces()){
                     if(piece.getState() == PieceState.COMPLETE){
                         message.setPiece(piece.getIndex(), true);
@@ -388,7 +387,8 @@ public class TPeerSocket extends PeerSocket {
                             throw new IOException("Bitfield is incorrect size");
                         }
 
-                        message = new BitfieldMessage(manager.getTorrent().getInfo().getTotalPieces()); //ONLY ALLOWED AFTER HANDSHAKE...
+                        message = new BitfieldMessage(); //ONLY ALLOWED AFTER HANDSHAKE...
+                        ((BitfieldMessage) message).setNumPieces(manager.getTorrent().getInfo().getTotalPieces());
                         byte[] buf = new byte[length-1];
                         in.read(buf);
                         message.decode(buf);
@@ -406,15 +406,27 @@ public class TPeerSocket extends PeerSocket {
                             //OTHERWISE IGNORE...
                             return;
                         }
+
+                        message = new RequestMessage(); //ONLY ALLOWED AFTER HANDSHAKE...
+                        message.decode(buf);
+
                     }
                     //System.out.println("REQUEST");
                     break;
 
-                case PIECE:
-                    System.out.println("PIECE");
-                    //ONCE COMPLETE - SET TO NOT REQUESTING
-                    //requesting = false;
-                    //LISTENER FOR COMPLETE
+                case PIECE: {
+                        byte[] buf = new byte[length-1];
+                        in.read(buf);
+
+                        message = new PieceMessage();
+                        message.decode(buf);
+
+                        System.out.println("PIECE:  "+buf.length);
+
+                        //ONCE COMPLETE - SET TO NOT REQUESTING
+                        //requesting = false;
+                        //LISTENER FOR COMPLETE
+                    }
                     break;
 
                 case CANCEL:

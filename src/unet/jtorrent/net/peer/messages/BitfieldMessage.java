@@ -11,11 +11,6 @@ public class BitfieldMessage extends MessageBase {
         type = MessageType.BITFIELD;
     }
 
-    public BitfieldMessage(int numPieces){
-        type = MessageType.BITFIELD;
-        pieces = new boolean[numPieces];
-    }
-
     @Override
     public byte[] encode(){
         byte[] buf = super.encode();
@@ -29,6 +24,8 @@ public class BitfieldMessage extends MessageBase {
 
     @Override
     public void decode(byte[] buf){
+        super.decode(buf);
+
         for(int i = 0; i < buf.length; i++){
             for(int j = 7; j >= 0; j--){
                 int pieceIndex = i * 8 + (7 - j);
@@ -42,6 +39,10 @@ public class BitfieldMessage extends MessageBase {
     @Override
     public int getLength(){
         return super.getLength()+((int) Math.ceil(pieces.length/8.0));
+    }
+
+    public void setNumPieces(int numPieces){
+        pieces = new boolean[numPieces];
     }
 
     public void setPiece(int i, boolean piece){
