@@ -61,16 +61,14 @@ public class TPeerSocket extends PeerSocket {
                     }
                 }
 
-                out.write(message.encode());
-                out.flush();
+                send(message);
             }
 
             receive();
 
             //SEND INTERESTED
             if(manager.getDownloadManager().isInterested(pieces)){
-                out.write(new InterestedMessage().encode());
-                out.flush();
+                send(new InterestedMessage());
             }
 
             if(!listeners.isEmpty()){
@@ -431,6 +429,23 @@ public class TPeerSocket extends PeerSocket {
 
                         //SAVE PIECE...
 
+                    //send(new KeepAliveMessage());
+                    System.err.println("READING PEICE START"+"  -  "+peer.getHostAddress().getHostAddress());
+
+                    buf = new byte[BLOCK_SIZE];
+                    int read = ((PieceMessage) message).getBegin()+((PieceMessage) message).getBlock().length;
+
+                    while(read < manager.getTorrent().getInfo().getPieceLength()){
+                        read += in.read(buf);
+
+                        if(in.read() == -1){
+                            System.err.println("BROKEN READ - "+read+" / "+manager.getTorrent().getInfo().getPieceLength()+"  -  "+peer.getHostAddress().getHostAddress());
+                            return;
+                        }
+                        System.out.println("READING "+read+" / "+manager.getTorrent().getInfo().getPieceLength()+"  -  "+peer.getHostAddress().getHostAddress());
+                    }
+
+                    System.err.println("CHUNK COMPLETE...   "+"  -  "+peer.getHostAddress().getHostAddress());
 
                     /*
                     try{
